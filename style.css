@@ -1,0 +1,39 @@
+:root{
+  --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#00b894;
+  --danger:#ff7675; --glass: rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box}
+body{font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#071022,#0b1220);color:#e6eef6;min-height:100vh;margin:0;padding:40px}
+.container{max-width:980px;margin:0 auto;background:var(--glass);padding:24px;border-radius:10px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+header h1{margin:0;font-size:26px}
+header p{margin:6px 0 6px;color:var(--muted)}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}
+#baseDate{color:var(--muted);font-weight:600}
+.actions{display:flex;gap:10px;align-items:center}
+.primary{background:var(--accent);color:#021014;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+.primary:hover{filter:brightness(1.05)}
+.download{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;text-decoration:none}
+.hidden{display:none}
+.input-area label{display:block;margin-bottom:8px;color:var(--muted)}
+textarea{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#071226;color:inherit;resize:vertical;font-size:14px}
+.controls{display:flex;align-items:center;gap:12px;margin-top:12px}
+button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:8px;color:inherit;cursor:pointer}
+button:hover{transform:translateY(-1px)}
+.status{color:var(--muted);margin-left:auto;font-size:14px}
+.hint{display:block;margin-top:8px;color:var(--muted)}
+.results{margin-top:24px}
+.summary{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px}
+#table{width:100%;border-collapse:collapse;background:transparent}
+#table thead th{font-weight:600;text-align:left;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+#table tbody td{padding:10px 8px;border-bottom:1px dashed rgba(255,255,255,0.03);vertical-align:top}
+.badge{display:inline-block;padding:6px 8px;border-radius:6px;font-weight:600}
+.badge.ok{background:rgba(0,184,148,0.12);color:var(--accent);border:1px solid rgba(0,184,148,0.12)}
+.badge.no{background:rgba(255,118,117,0.08);color:var(--danger);border:1px solid rgba(255,118,117,0.06)}
+footer{margin-top:18px;color:var(--muted);font-size:13px}
+a{color:inherit;text-decoration:underline}
+@media (max-width:720px){
+  .meta{flex-direction:column;align-items:flex-start}
+  #table thead{display:none}
+  #table tbody td{display:block;padding:10px 0}
+  #table tbody tr{margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.03)}
+}
