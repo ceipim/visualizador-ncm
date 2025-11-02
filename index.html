@@ -285,7 +285,6 @@
             line-height: 1.3;
         }
         
-        /* ESTILO PARA INFO DE FIM DE VIGÊNCIA */
         .result-item .ncm-end-info {
             font-size: 0.8rem;
             color: var(--color-error-dark);
@@ -561,8 +560,8 @@
             <li>Arraste os <strong>DOIS</strong> arquivos JSON que você baixou para a janela do GitHub.</li>
             <li><strong>IMPORTANTE:</strong> Renomeie os arquivos <strong>exatamente</strong> assim:</li>
             <ul>
-                <li>O arquivo Vigente deve se chamar: <strong class="code-highlight">ncm_vigente.json</strong></li>
-                <li>O arquivo Histórico deve se chamar: <strong class="code-highlight">ncm_historico.json</strong></li>
+                <li>O arquivo Vigente deve se chamar: <strong class="code-highlight">Tabela_NCM_Vigente.json</strong></li>
+                <li>O arquivo Histórico deve se chamar: <strong class="code-highlight">Tabela_NCM_Historica.json</strong></li>
             </ul>
             <li>Escreva uma mensagem de commit (ex: "Atualiza bases NCM") e clique em <strong>"Commit changes"</strong> (Confirmar alterações).</li>
         </ol>
@@ -581,9 +580,9 @@
         let lastVigentes = [];
         let lastNaoVigentes = []; 
 
-        // DOIS ARQUIVOS-FONTE
-        const VIGENTE_JSON_FILE = 'ncm_vigente.json';
-        const HISTORICO_JSON_FILE = 'ncm_historico.json';
+        // NOMES DOS ARQUIVOS ATUALIZADOS
+        const VIGENTE_JSON_FILE = 'Tabela_NCM_Vigente.json';
+        const HISTORICO_JSON_FILE = 'Tabela_NCM_Historica.json';
 
         // --- Seleção de Elementos DOM ---
         const ncmInput = document.getElementById('ncmInput');
@@ -707,11 +706,18 @@
                 
                 const newDatabase = {};
                 let vigentesCount = 0;
+                let dataVigenteStr = "Data não informada";
                 
                 // 1. Processa o arquivo de NCMs VIGENTES
+                // Tenta encontrar o array 'Nomenclaturas' ou o primeiro array grande
                 let ncmArrayVigente = dataVigente.Nomenclaturas || dataVigente[Object.keys(dataVigente).find(k => Array.isArray(dataVigente[k]))];
                 
                 if (!ncmArrayVigente) throw new Error("Formato inválido no arquivo de NCMs Vigentes.");
+                
+                // Pega a data de atualização do arquivo VIGENTE
+                if(dataVigente.Data_Ultima_Atualizacao_NCM) {
+                    dataVigenteStr = dataVigente.Data_Ultima_Atualizacao_NCM;
+                }
                 
                 ncmArrayVigente.forEach(item => {
                     const code = item.Codigo;
@@ -740,8 +746,7 @@
                         const normalizedCode = code.replace(/\D/g, '');
                         if (normalizedCode.length === 8) {
                             
-                            // Se por acaso uma NCM estiver em ambos (pouco provável),
-                            // o histórico (não-vigente) sobrescreve o vigente.
+                            // Se a NCM estiver em ambos (conflito), a do HISTÓRICO (não-vigente) sobrescreve.
                             if(newDatabase.hasOwnProperty(normalizedCode)) {
                                 console.warn(`NCM ${normalizedCode} encontrada em ambos os arquivos. Marcando como não-vigente.`);
                                 vigentesCount--; // Corrige a contagem
@@ -768,15 +773,14 @@
                 ncmDatabase = newDatabase;
 
                 // 3. Atualiza a UI
-                let updateDateStr = dataVigente.Data_Ultima_Atualizacao_NCM || "Data não informada";
                 // Formata o nome do arquivo da data
-                const dateMatch = updateDateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                const dateMatch = dataVigenteStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                 if (dateMatch) {
                     const [_, day, month, year] = dateMatch;
                     const yyyymmdd = year + month + day;
                     dataSourceInfo.textContent = `Base Vigente: Tabela_NCM_Vigente_${yyyymmdd}.json`;
                 } else {
-                    dataSourceInfo.textContent = `Bases de Dados Carregadas (Vigente: ${updateDateStr})`;
+                    dataSourceInfo.textContent = `Bases Carregadas (Vigente: ${dataVigenteStr})`;
                 }
                 
                 if (databaseStatsInfo) {
