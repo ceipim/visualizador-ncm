@@ -103,6 +103,16 @@
             margin-bottom: 1.5rem;
             border: 1px solid var(--color-border);
         }
+        
+        /* NOVO: Alinha botões dos cards de resultado à direita */
+        .card .button-group {
+             justify-content: flex-end;
+        }
+        /* Reseta o alinhamento para o primeiro card (inputs) */
+        #aba-comparador > .card:first-child .button-group {
+            justify-content: flex-start;
+        }
+
 
         #ncmInput {
             width: 100%;
@@ -221,12 +231,26 @@
             padding-bottom: 0.5rem;
         }
 
-        /* NOVO: Estilo para as caixas de sumário de não vigentes */
+        /* NOVO: Estilo para as textareas de resultado do comparador */
+        .comparador-result-textarea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            resize: vertical;
+            margin-top: 0.5rem;
+            background-color: #f8f9fa; /* Fundo levemente cinza */
+        }
+        
+
         .summary-copy-box {
             background: var(--color-bg-light);
             border-radius: 12px;
             box-shadow: 0 6px 12px var(--color-shadow);
-            padding: 1rem;
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
             border: 1px solid var(--color-border);
         }
@@ -242,13 +266,13 @@
          .summary-copy-box textarea {
             width: 100%;
             flex-grow: 1;
-            height: 45px; /* Altura de uma linha */
+            height: 45px;
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
             padding: 0.5rem;
             border: 1px solid var(--color-border);
             border-radius: 8px;
-            resize: none; /* Desabilita resize */
+            resize: none; 
         }
         .summary-copy-box button {
             flex-shrink: 0;
@@ -330,11 +354,7 @@
             }
         }
         
-        @media (min-width: 1200px) {
-            .results-container.comparador {
-                grid-template-columns: 1fr 1fr 1fr;
-            }
-        }
+        /* REMOVIDO: .results-container.comparador */
         
         .result-card.nao-vigente {
             background-color: var(--color-error);
@@ -345,29 +365,7 @@
             border-color: var(--color-success-border);
         }
         
-        .result-card.comum {
-            background-color: #e6e0f8; 
-            border-color: #c5b8f3;
-        }
-        .result-card.comum h3 {
-            color: #49397e;
-        }
-        .result-card.exclusivo {
-            background-color: #e0f2f1; 
-            border-color: #b2dfdb;
-        }
-         .result-card.exclusivo h3 {
-            color: #004d40;
-        }
-        
-        /* NOVO: Estilo para NCM não vigente dentro dos cards de comparação */
-        .result-item .ncm-nao-vigente {
-            font-size: 0.8rem;
-            color: var(--color-error-dark);
-            font-weight: bold;
-            margin-top: 2px;
-        }
-
+        /* REMOVIDO: .result-card.comum, .result-card.exclusivo, .ncm-nao-vigente */
         
         .result-card h3 {
             display: flex;
@@ -597,7 +595,7 @@
 84713012
 8517.62.55, 8471.30.12
 (Uma ou várias NCMs por linha, separadas por vírgula, espaço ou quebra de linha)"></textarea>
-                <div class="button-group">
+                <div class="button-group" style="justify-content: flex-start;">
                     <button id="verifyBtn">Verificar NCMs</button>
                     <button id="clearBtn" class="secondary">Limpar Tudo</button>
                 </div>
@@ -669,21 +667,27 @@
                 </div>
             </div>
 
-            <div class="results-container comparador">
-                
-                <div class="card result-card comum hidden" id="compareResultComum">
-                    <h3><span>Em Comum (<span id="comumCount">0</span>)</span></h3>
-                    <div id="comumList" class="result-list"></div>
+            <div class="card hidden" id="compareResultComum">
+                <h3>Em Comum (<span id="comumCount">0</span>)</h3>
+                <textarea id="comumList" class="comparador-result-textarea" readonly></textarea>
+                <div class="button-group">
+                    <button id="copyComumBtn" class="success">Copiar Lista</button>
                 </div>
+            </div>
 
-                <div class="card result-card exclusivo hidden" id="compareResultGrupo1">
-                    <h3><span>Apenas no Grupo 1 (<span id="exclusivoG1Count">0</span>)</span></h3>
-                    <div id="exclusivoG1List" class="result-list"></div>
+            <div class="card hidden" id="compareResultGrupo1">
+                <h3>Apenas no Grupo 1 (<span id="exclusivoG1Count">0</span>)</h3>
+                <textarea id="exclusivoG1List" class="comparador-result-textarea" readonly></textarea>
+                <div class="button-group">
+                    <button id="copyExclusivoG1Btn" class="secondary">Copiar Lista</button>
                 </div>
-                
-                <div class="card result-card exclusivo hidden" id="compareResultGrupo2">
-                    <h3><span>Apenas no Grupo 2 (<span id="exclusivoG2Count">0</span>)</span></h3>
-                    <div id="exclusivoG2List" class="result-list"></div>
+            </div>
+            
+            <div class="card hidden" id="compareResultGrupo2">
+                <h3>Apenas no Grupo 2 (<span id="exclusivoG2Count">0</span>)</h3>
+                <textarea id="exclusivoG2List" class="comparador-result-textarea" readonly></textarea>
+                <div class="button-group">
+                    <button id="copyExclusivoG2Btn" class="secondary">Copiar Lista</button>
                 </div>
             </div>
             
@@ -810,17 +814,21 @@
         
         const compareResultComum = document.getElementById('compareResultComum');
         const comumCount = document.getElementById('comumCount');
-        const comumList = document.getElementById('comumList');
+        const comumList = document.getElementById('comumList'); // Agora é um textarea
         
         const compareResultGrupo1 = document.getElementById('compareResultGrupo1');
         const exclusivoG1Count = document.getElementById('exclusivoG1Count');
-        const exclusivoG1List = document.getElementById('exclusivoG1List');
+        const exclusivoG1List = document.getElementById('exclusivoG1List'); // Agora é um textarea
         
         const compareResultGrupo2 = document.getElementById('compareResultGrupo2');
         const exclusivoG2Count = document.getElementById('exclusivoG2Count');
-        const exclusivoG2List = document.getElementById('exclusivoG2List');
+        const exclusivoG2List = document.getElementById('exclusivoG2List'); // Agora é um textarea
         
-        // NOVOS Seletores (Sumário Não Vigentes)
+        // Novos botões de cópia (Comparador)
+        const copyComumBtn = document.getElementById('copyComumBtn');
+        const copyExclusivoG1Btn = document.getElementById('copyExclusivoG1Btn');
+        const copyExclusivoG2Btn = document.getElementById('copyExclusivoG2Btn');
+
         const compareNaoVigenteG1Box = document.getElementById('compareNaoVigenteG1Box');
         const compareNaoVigenteG1Text = document.getElementById('compareNaoVigenteG1Text');
         const copyCompareNaoVigenteG1Btn = document.getElementById('copyCompareNaoVigenteG1Btn');
@@ -917,9 +925,11 @@
         // --- Listeners ABA 2: COMPARADOR ---
         compareBtn.addEventListener('click', compareNCMs);
         clearCompareBtn.addEventListener('click', clearCompareResults);
-        // NOVOS Listeners
-        copyCompareNaoVigenteG1Btn.addEventListener('click', copyNaoVigentesG1List);
-        copyCompareNaoVigenteG2Btn.addEventListener('click', copyNaoVigentesG2List);
+        copyComumBtn.addEventListener('click', () => copyCompareList(comumList, "Lista de NCMs em comum copiada!"));
+        copyExclusivoG1Btn.addEventListener('click', () => copyCompareList(exclusivoG1List, "Lista de NCMs (Apenas G1) copiada!"));
+        copyExclusivoG2Btn.addEventListener('click', () => copyCompareList(exclusivoG2List, "Lista de NCMs (Apenas G2) copiada!"));
+        copyCompareNaoVigenteG1Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG1Text, "Lista de NCMs não vigentes (G1) copiada!"));
+        copyCompareNaoVigenteG2Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG2Text, "Lista de NCMs não vigentes (G2) copiada!"));
 
 
         /**
@@ -1202,6 +1212,11 @@
 
             const setG1 = extractNcms(textoG1);
             const setG2 = extractNcms(textoG2);
+            
+            if (setG1.size === 0 || setG2.size === 0) {
+                 showToast("Nenhum NCM válido encontrado em um dos grupos.", "warn");
+                return;
+            }
 
             const comum = [];
             const exclusivoG1 = [];
@@ -1241,16 +1256,18 @@
 
             // 4. Exibe os sumários de não vigentes
             if (naoVigentesG1.length > 0) {
-                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatNCM).join(', ');
+                compareNaoVigenteG1Text.value = naoVigentesG1.sort().map(formatNCM).join(', ');
                 compareNaoVigenteG1Box.classList.remove('hidden');
             } else {
+                compareNaoVigenteG1Text.value = '';
                 compareNaoVigenteG1Box.classList.add('hidden');
             }
             
             if (naoVigentesG2.length > 0) {
-                compareNaoVigenteG2Text.value = naoVigentesG2.map(formatNCM).join(', ');
+                compareNaoVigenteG2Text.value = naoVigentesG2.sort().map(formatNCM).join(', ');
                 compareNaoVigenteG2Box.classList.remove('hidden');
             } else {
+                compareNaoVigenteG2Text.value = '';
                 compareNaoVigenteG2Box.classList.add('hidden');
             }
             
@@ -1264,9 +1281,13 @@
             ncmInputGrupo1.value = '';
             ncmInputGrupo2.value = '';
             
-            comumList.innerHTML = '';
-            exclusivoG1List.innerHTML = '';
-            exclusivoG2List.innerHTML = '';
+            comumList.value = '';
+            exclusivoG1List.value = '';
+            exclusivoG2List.value = '';
+            
+            comumCount.textContent = '0';
+            exclusivoG1Count.textContent = '0';
+            exclusivoG2Count.textContent = '0';
             
             compareResultComum.classList.add('hidden');
             compareResultGrupo1.classList.add('hidden');
@@ -1296,74 +1317,56 @@
          * Exibe os resultados da comparação (ABA 2)
          */
         function displayCompareResults(comum, g1, g2) {
-            // Limpa listas
-            comumList.innerHTML = '';
-            exclusivoG1List.innerHTML = '';
-            exclusivoG2List.innerHTML = '';
             
-            // Função helper para criar o item
-            const createCompareItemHtml = (item) => {
-                const desc = item.vigente ? (ncmDatabase[item.code].desc || '') : '(Não vigente ou inválida)';
-                const descClass = item.vigente ? 'ncm-desc' : 'ncm-nao-vigente';
-                return `
-                    <div class="result-item">
-                        <div>
-                            <span><strong>${formatNCM(item.code)}</strong></span>
-                            <div class="${descClass}">${desc}</div>
-                        </div>
-                    </div>
-                `;
+            // Função helper para formatar o texto da NCM para a textarea
+            const formatCompareText = (item) => {
+                const status = item.vigente ? "Vigente" : "Não vigente/inválida";
+                return `${formatNCM(item.code)} (${status})`;
             };
 
             // Popula Em Comum
             if (comum.length > 0) {
-                comumList.innerHTML = comum.sort((a,b) => a.code.localeCompare(b.code)).map(createCompareItemHtml).join('');
+                comumList.value = comum.sort((a,b) => a.code.localeCompare(b.code)).map(formatCompareText).join('\n');
                 comumCount.textContent = comum.length;
                 compareResultComum.classList.remove('hidden');
             } else {
+                comumList.value = '';
                 comumCount.textContent = 0;
                 compareResultComum.classList.add('hidden');
             }
 
             // Popula Apenas no Grupo 1
             if (g1.length > 0) {
-                exclusivoG1List.innerHTML = g1.sort((a,b) => a.code.localeCompare(b.code)).map(createCompareItemHtml).join('');
+                exclusivoG1List.value = g1.sort((a,b) => a.code.localeCompare(b.code)).map(formatCompareText).join('\n');
                 exclusivoG1Count.textContent = g1.length;
                 compareResultGrupo1.classList.remove('hidden');
             } else {
+                exclusivoG1List.value = '';
                 exclusivoG1Count.textContent = 0;
                 compareResultGrupo1.classList.add('hidden');
             }
 
             // Popula Apenas no Grupo 2
             if (g2.length > 0) {
-                exclusivoG2List.innerHTML = g2.sort((a,b) => a.code.localeCompare(b.code)).map(createCompareItemHtml).join('');
+                exclusivoG2List.value = g2.sort((a,b) => a.code.localeCompare(b.code)).map(formatCompareText).join('\n');
                 exclusivoG2Count.textContent = g2.length;
                 compareResultGrupo2.classList.remove('hidden');
             } else {
+                exclusivoG2List.value = '';
                 exclusivoG2Count.textContent = 0;
                 compareResultGrupo2.classList.add('hidden');
             }
         }
         
-        // NOVAS Funções de Cópia
-        function copyNaoVigentesG1List() {
-            const textToCopy = compareNaoVigenteG1Text.value;
+        // Função de cópia genérica para as textareas do comparador
+        function copyCompareList(textareaElement, successMessage) {
+            const textToCopy = textareaElement.value;
             if (textToCopy) {
-                copyToClipboard(textToCopy, "Lista de NCMs não vigentes (G1) copiada!");
+                copyToClipboard(textToCopy, successMessage);
             } else {
                 showToast("Não há NCMs para copiar.", "warn");
             }
         }
-        function copyNaoVigentesG2List() {
-            const textToCopy = compareNaoVigenteG2Text.value;
-            if (textToCopy) {
-                copyToClipboard(textToCopy, "Lista de NCMs não vigentes (G2) copiada!");
-            } else {
-                showToast("Não há NCMs para copiar.", "warn");
-            }
-        }
-
         
         // ==========================================================
         // FUNÇÕES UTILITÁRIAS (COMPARTILHADAS)
