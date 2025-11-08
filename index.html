@@ -49,7 +49,7 @@
 
         .container {
             width: 100%; 
-            max-width: 1200px;
+            max-width: 1380px; /* Aumentado de 1200px (15%) */
             margin: 0 auto;
             padding: 1rem;
             flex-grow: 1; 
@@ -108,7 +108,6 @@
              justify-content: flex-end;
         }
         
-        /* Reseta o alinhamento para os cards de input */
         #aba-verificador > .card:first-child .button-group,
         #aba-comparador > .card:first-child .button-group {
             justify-content: flex-start;
@@ -244,7 +243,6 @@
             font-size: 1rem;
             margin-bottom: 0.75rem;
         }
-        /* Colore os títulos das caixas de cópia */
         .summary-copy-box.comum h3 { color: #49397e; }
         .summary-copy-box.exclusivo h3 { color: #004d40; }
         .summary-copy-box.nao-vigente h3 { color: var(--color-error-dark); }
@@ -256,14 +254,23 @@
          .summary-copy-box textarea {
             width: 100%;
             flex-grow: 1;
-            height: 45px;
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
             padding: 0.5rem;
             border: 1px solid var(--color-border);
             border-radius: 8px;
+        }
+        /* Altura caixas Não Vigentes */
+        #compareNaoVigenteG1Text, #compareNaoVigenteG2Text {
+            height: 45px;
             resize: none; 
         }
+        /* Altura caixas de Resultado (aprox 3 linhas) */
+        #comumListText, #exclusivoG1ListText, #exclusivoG2ListText {
+            height: 90px;
+            resize: vertical;
+        }
+        
         .summary-copy-box button {
             flex-shrink: 0;
         }
@@ -272,9 +279,9 @@
         #statsCard {
             text-align: center;
         }
-
+        /* Altura reduzida para o card de Resumo */
         #statsCard h2 {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .stats-grid {
@@ -285,7 +292,7 @@
         }
 
         .stat-item {
-            padding: 1rem;
+            padding: 0.75rem; /* Reduzido de 1rem */
             border-radius: 8px;
             flex-basis: 150px;
             flex-grow: 1;
@@ -315,16 +322,17 @@
             align-items: center;
         }
 
+        /* Altura reduzida para as caixas de cópia do Verificador */
         .copy-box textarea {
             width: 100%;
             flex-grow: 1;
-            height: 100px;
+            height: 45px; /* Reduzido de 100px */
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
             padding: 0.5rem;
             border: 1px solid var(--color-border);
             border-radius: 8px;
-            resize: vertical;
+            resize: none; /* Desabilitado resize */
         }
 
         .copy-box button {
@@ -344,7 +352,6 @@
             }
         }
         
-        /* Layout de 3 colunas para resultados do comparador */
         @media (min-width: 1200px) {
             .results-container.comparador {
                 grid-template-columns: 1fr 1fr 1fr;
@@ -360,7 +367,6 @@
             border-color: var(--color-success-border);
         }
         
-        /* RE-ADICIONADO: Estilos para os cards de resultado do comparador */
         .result-card.comum {
             background-color: #e6e0f8; 
             border-color: #c5b8f3;
@@ -376,7 +382,6 @@
             color: #004d40;
         }
         
-        /* RE-ADICIONADO: Estilo para NCM não vigente dentro dos cards de comparação */
         .result-item .ncm-nao-vigente {
             font-size: 0.8rem;
             color: var(--color-error-dark);
@@ -471,7 +476,7 @@
             align-items: center;
             flex-wrap: wrap; 
             padding: 1rem;
-            max-width: 1200px; 
+            max-width: 1380px; /* Aumentado de 1200px (15%) */
             margin: 0 auto; 
             gap: 1rem; 
             flex-shrink: 0; 
@@ -649,13 +654,13 @@
 
             <div class="results-container">
                 <div class="card result-card vigente hidden" id="vigenteCard">
-                    <h3><span>Vigentes (<span id="vigenteCount">0</span>)</span></h3>
+                    <h3><span>Vigentes - (<span id="vigenteCount">0</span>)</span></h3>
                     <div id="vigenteList" class="result-list">
                         </div>
                 </div>
 
                 <div class="card result-card nao-vigente hidden" id="naoVigenteCard">
-                    <h3><span>Não Vigentes (<span id="naoVigenteCount">0</span>)</span></h3>
+                    <h3><span>Não Vigentes - (<span id="naoVigenteCount">0</span>)</span></h3>
                     <div id="naoVigenteList" class="result-list">
                         </div>
                 </div>
@@ -683,46 +688,26 @@
                     <button id="clearCompareBtn" class="secondary">Limpar Comparação</button>
                 </div>
             </div>
-
-            <div class="results-container comparador">
-                <div class="card result-card comum hidden" id="compareResultComum">
-                    <h3><span>Em Comum (<span id="comumCount">0</span>)</span></h3>
-                    <div id="comumList" class="result-list"></div>
-                </div>
-
-                <div class="card result-card exclusivo hidden" id="compareResultGrupo1">
-                    <h3><span>Apenas no Grupo 1 (<span id="exclusivoG1Count">0</span>)</span></h3>
-                    <div id="exclusivoG1List" class="result-list"></div>
-                </div>
-                
-                <div class="card result-card exclusivo hidden" id="compareResultGrupo2">
-                    <h3><span>Apenas no Grupo 2 (<span id="exclusivoG2Count">0</span>)</span></h3>
-                    <div id="exclusivoG2List" class="result-list"></div>
-                </div>
-            </div>
             
-            <div class="summary-copy-box comum hidden" id="comumCopyBox">
-                <h3>Lista "Em Comum" (para copiar)</h3>
-                <div class="input-group">
-                    <textarea id="comumListText" readonly title="NCMs em comum, separadas por vírgula."></textarea>
-                    <button id="copyComumBtn" class="success">Copiar</button>
-                </div>
-            </div>
-
             <div class="summary-copy-box exclusivo hidden" id="exclusivoG1CopyBox">
                 <h3>Lista "Apenas no Grupo 1" (para copiar)</h3>
                 <div class="input-group">
                     <textarea id="exclusivoG1ListText" readonly title="NCMs apenas no G1, separadas por vírgula."></textarea>
-                    <button id="copyExclusivoG1Btn" class="secondary">Copiar</button>
-                </div>
+                    <button id="copyExclusivoG1Btn" class="success">Copiar</button> </div>
             </div>
 
             <div class="summary-copy-box exclusivo hidden" id="exclusivoG2CopyBox">
                 <h3>Lista "Apenas no Grupo 2" (para copiar)</h3>
                 <div class="input-group">
                     <textarea id="exclusivoG2ListText" readonly title="NCMs apenas no G2, separadas por vírgula."></textarea>
-                    <button id="copyExclusivoG2Btn" class="secondary">Copiar</button>
-                </div>
+                    <button id="copyExclusivoG2Btn" class="success">Copiar</button> </div>
+            </div>
+            
+            <div class="summary-copy-box comum hidden" id="comumCopyBox">
+                <h3>Lista de NCMs comuns aos dois Grupos (para copiar)</h3>
+                <div class="input-group">
+                    <textarea id="comumListText" readonly title="NCMs em comum, separadas por vírgula."></textarea>
+                    <button id="copyComumBtn" class="secondary">Copiar</button> </div>
             </div>
             
             <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG1Box">
@@ -738,6 +723,23 @@
                 <div class="input-group">
                     <textarea id="compareNaoVigenteG2Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 2."></textarea>
                     <button id="copyCompareNaoVigenteG2Btn" class="danger">Copiar</button>
+                </div>
+            </div>
+
+            <div class="results-container comparador">
+                <div class="card result-card comum hidden" id="compareResultComum">
+                    <h3><span>Em Comum - (<span id="comumCount">0</span>)</span></h3>
+                    <div id="comumList" class="result-list"></div>
+                </div>
+
+                <div class="card result-card exclusivo hidden" id="compareResultGrupo1">
+                    <h3><span>Apenas no Grupo 1 - (<span id="exclusivoG1Count">0</span>)</span></h3>
+                    <div id="exclusivoG1List" class="result-list"></div>
+                </div>
+                
+                <div class="card result-card exclusivo hidden" id="compareResultGrupo2">
+                    <h3><span>Apenas no Grupo 2 - (<span id="exclusivoG2Count">0</span>)</span></h3>
+                    <div id="exclusivoG2List" class="result-list"></div>
                 </div>
             </div>
             
@@ -846,7 +848,6 @@
         const compareBtn = document.getElementById('compareBtn');
         const clearCompareBtn = document.getElementById('clearCompareBtn');
         
-        // Resultados Visuais (Cards Coloridos)
         const compareResultComum = document.getElementById('compareResultComum');
         const comumCount = document.getElementById('comumCount');
         const comumList = document.getElementById('comumList'); // DIV
@@ -1150,9 +1151,10 @@
                 vigenteList.innerHTML = vigenteHtml;
                 vigenteCard.classList.remove('hidden');
 
+                // ATUALIZADO: Formato de cópia com vírgula
                 const vigenteString = [...vigentes].sort((a, b) => a.code.localeCompare(b.code))
                                                    .map(item => formatNCM(item.code))
-                                                   .join('\n'); 
+                                                   .join(', '); 
                 vigenteListText.value = vigenteString;
                 vigenteCopyBox.classList.remove('hidden');
 
@@ -1176,8 +1178,9 @@
                 naoVigenteList.innerHTML = naoVigenteHtml;
                 naoVigenteCard.classList.remove('hidden');
 
+                // ATUALIZADO: Formato de cópia com vírgula
                 const naoVigenteString = [...naoVigentes].sort((a, b) => a.code.localeCompare(b.code))
-                    .map(item => `${formatNCM(item.code)} (Não vigente/inválida)`).join('\n');
+                    .map(item => formatNCM(item.code)).join(', ');
                 naoVigenteListText.value = naoVigenteString;
                 naoVigenteCopyBox.classList.remove('hidden');
 
