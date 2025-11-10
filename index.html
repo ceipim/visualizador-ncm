@@ -21,6 +21,11 @@
             --color-error-border: #f5c6cb;
             --color-success-dark: #155724;
             --color-error-dark: #721c24;
+            /* Cor para NCMs Expiradas */
+            --color-warning: #fff8e1;
+            --color-warning-border: #ffecb3;
+            --color-warning-dark: #8a6d3b;
+            
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -40,8 +45,7 @@
             background-attachment: fixed;
             color: var(--color-text);
             line-height: 1.6;
-            /* PADDING SUPERIOR REDUZIDO */
-            padding: 0.5rem 1rem 4rem 1rem; 
+            padding: 0.5rem 1rem 4rem 1rem;
             
             display: flex;
             flex-direction: column;
@@ -66,7 +70,7 @@
             color: var(--color-bg-light);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             font-size: 2.2rem;
-            margin-bottom: 1rem; /* Reduzido */
+            margin-bottom: 1rem;
         }
         
         h2 {
@@ -92,7 +96,7 @@
             font-style: italic;
             font-size: 0.9rem;
             margin-top: 0;
-            margin-bottom: 1rem; /* Reduzido */
+            margin-bottom: 1rem; 
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
@@ -234,7 +238,7 @@
             display: grid;
             grid-template-columns: 1fr; 
             gap: 1.5rem;
-            margin-bottom: 0.75rem; /* ESPAÇAMENTO REDUZIDO */
+            margin-bottom: 0.75rem; 
         }
         @media (min-width: 768px) {
             .comparador-results-grid {
@@ -243,7 +247,7 @@
         }
         
         #exclusivoG1CopyBox, #exclusivoG2CopyBox {
-            margin-bottom: 0.75rem; /* ESPAÇAMENTO REDUZIDO */
+            margin-bottom: 0.75rem; 
         }
         
 
@@ -377,6 +381,13 @@
             background-color: var(--color-error);
             border-color: var(--color-error-border);
         }
+        /* NOVO: Estilo Card Expirado (Laranja/Amarelo) */
+        .result-card.expirado {
+            background-color: var(--color-warning);
+            border-color: var(--color-warning-border);
+        }
+         .result-card.expirado h3 { color: var(--color-warning-dark); }
+        
         .result-card.vigente {
             background-color: var(--color-success);
             border-color: var(--color-success-border);
@@ -428,6 +439,124 @@
             line-height: 1.3;
         }
         
+        /* NOVO: Estilo para NCM não vigente (expirada ou inválida) */
+        .result-item .ncm-nao-vigente {
+            font-size: 0.8rem;
+            color: var(--color-error-dark);
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        /* NOVO: Estilo para NCM expirada */
+         .result-item .ncm-expirada {
+            font-size: 0.8rem;
+            color: var(--color-warning-dark);
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        
+        
+        /* ========================================================== */
+        /* ESTILOS DA ABA "LIVRO DA NCMs" */
+        /* ========================================================== */
+        
+        #ncmTree {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            border: 1px solid var(--color-border);
+        }
+        
+        .tree-node {
+            list-style-type: none;
+            margin-left: 20px;
+            position: relative;
+        }
+        
+        .tree-node .node-label {
+            cursor: pointer;
+            display: block;
+            padding: 3px 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .tree-node .node-label:hover {
+            background-color: var(--color-bg);
+        }
+        
+        /* Triângulo (expansor) */
+        .tree-node .node-label::before {
+            content: '►'; /* Fechado */
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+            font-size: 0.8em;
+            color: var(--color-primary);
+            transition: transform 0.1s ease;
+        }
+        
+        .tree-node.expanded > .node-label::before {
+            content: '▼'; /* Aberto */
+        }
+        
+        /* Esconde sub-lista por padrão */
+        .tree-node .sub-tree {
+            display: none;
+        }
+        
+        .tree-node.expanded > .sub-tree {
+            display: block;
+        }
+        
+        /* Nível 0 (Seção) */
+        .tree-node.level-0 > .node-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--color-primary-dark);
+            margin-top: 1rem;
+            font-family: var(--font-family); /* Fonte normal para Seções */
+        }
+        
+        /* Nível 1 (Capítulo) */
+        .tree-node.level-1 > .node-label {
+            font-weight: bold;
+            color: #000;
+        }
+        
+        /* Nível 2 (Posição) */
+        .tree-node.level-2 > .node-label {
+            color: var(--color-text);
+        }
+        
+        /* Nível 3 (Subposição 1) */
+        .tree-node.level-3 > .node-label {
+            color: var(--color-text-light);
+        }
+        
+        /* Nível 4 (Item) */
+        .tree-node.level-4 > .node-label {
+            color: var(--color-text-light);
+        }
+        
+        /* Nível 5 (Subitem - NCM 8 dígitos) */
+        .tree-node.level-5 {
+            color: #333;
+        }
+        /* Nível 5 não tem expansor */
+        .tree-node.level-5 > .node-label {
+            cursor: default;
+        }
+        .tree-node.level-5 > .node-label::before {
+            content: '•';
+            font-size: 0.6em;
+            vertical-align: middle;
+        }
+
+
         #toastContainer {
             position: fixed;
             bottom: 20px;
@@ -600,6 +729,7 @@
         <nav class="tabs">
             <button id="tabBtnVerificador" class="tab-button active">Verificador</button>
             <button id="tabBtnComparador" class="tab-button">Comparador</button>
+            <button id="tabBtnLivro" class="tab-button">Livro da NCMs</button>
         </nav>
         
         <div id="aba-verificador" class="tab-content">
@@ -640,7 +770,7 @@
             </div>
 
             <div class="copy-box hidden" id="naoVigenteCopyBox">
-                <textarea id="naoVigenteListText" readonly title="Lista de NCMs não vigentes (inválidas)."></textarea>
+                <textarea id="naoVigenteListText" readonly title="Lista de NCMs não vigentes (expiradas ou inválidas)."></textarea>
                 <button id="copyNaoVigenteListBtn" class="danger">Copiar Não Vigentes</button>
             </div>
 
@@ -652,9 +782,15 @@
                         </div>
                 </div>
 
-                <div class="card result-card nao-vigente hidden" id="naoVigenteCard">
-                    <h3><span>Não Vigentes - (<span id="naoVigenteCount">0</span>)</span></h3>
-                    <div id="naoVigenteList" class="result-list">
+                <div class="card result-card expirado hidden" id="expiradoCard">
+                    <h3><span>Expiradas - (<span id="expiradoCount">0</span>)</span></h3>
+                    <div id="expiradoList" class="result-list">
+                        </div>
+                </div>
+                
+                <div class="card result-card nao-vigente hidden" id="invalidoCard">
+                    <h3><span>Inválidas - (<span id="invalidoCount">0</span>)</span></h3>
+                    <div id="invalidoList" class="result-list">
                         </div>
                 </div>
             </div>
@@ -696,7 +832,7 @@
                     <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG1Box">
                         <h3 id="naoVigenteG1CopyTitle">NCMs Não Vigentes (Grupo 1) - (0)</h3>
                         <div class="input-group">
-                            <textarea id="compareNaoVigenteG1Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 1." placeholder="Nenhuma NCM não vigente para o Grupo 1."></textarea>
+                            <textarea id="compareNaoVigenteG1Text" readonly title="Lista de NCMs não vigentes (expiradas ou inválidas) no Grupo 1." placeholder="Nenhuma NCM não vigente para o Grupo 1."></textarea>
                             <button id="copyCompareNaoVigenteG1Btn" class="danger">Copiar</button>
                         </div>
                     </div>
@@ -714,7 +850,7 @@
                     <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG2Box">
                         <h3 id="naoVigenteG2CopyTitle">NCMs Não Vigentes (Grupo 2) - (0)</h3>
                         <div class="input-group">
-                            <textarea id="compareNaoVigenteG2Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 2." placeholder="Nenhuma NCM não vigente para o Grupo 2."></textarea>
+                            <textarea id="compareNaoVigenteG2Text" readonly title="Lista de NCMs não vigentes (expiradas ou inválidas) no Grupo 2." placeholder="Nenhuma NCM não vigente para o Grupo 2."></textarea>
                             <button id="copyCompareNaoVigenteG2Btn" class="danger">Copiar</button>
                         </div>
                     </div>
@@ -730,7 +866,17 @@
             </div>
             
         </div>
-        </div> <div class="page-footer">
+        
+        <div id="aba-livro" class="tab-content hidden">
+            <div class="card">
+                <h2>Estrutura Hierárquica da NCM</h2>
+                <p style="color: var(--color-text-light); font-size: 0.9rem; margin-top: -0.5rem; margin-bottom: 1rem;">Clique nos itens para expandir e navegar pela árvore.</p>
+                <ul id="ncmTree">
+                    </ul>
+            </div>
+        </div>
+
+    </div> <div class="page-footer">
         <a href="#" id="updateLink" title="Acesso do Administrador">Atualizar Base de Dados</a>
         <p id="copyrightInfo">&copy; 2025. Design by <span class="overline-md">MD</span>.</p>
     </div>
@@ -753,24 +899,26 @@
     <div id="instructionsModal" class="card modal large-modal hidden">
         <h2>Instruções para Atualizar a Base NCM</h2>
         
-        <h3>Passo 1: Baixar o novo JSON</h3>
-        <p>Acesse o portal oficial do governo e baixe o arquivo JSON de NCMs **Vigentes** mais recente.</p>
+        <h3>Passo 1: Baixar o novo CSV</h3>
+        <p>Acesse o portal oficial do governo e baixe o arquivo de NCMs **Vigentes** mais recente.</p>
         <a href="https.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias/download-ncm-nomenclatura-comum-do-mercosul" target="_blank" rel="noopener noreferrer">
             Página de Download de NCMs (Receita Federal)
         </a>
-        <p>Procure pelo link de download do arquivo JSON **Vigente**. O arquivo baixado terá um nome com a data, como `Tabela_NCM_Vigente_YYYYMMDD.json`.</p>
+        <p>Procure pelo link de download do arquivo (geralmente .xlsx) e abra-o no Excel ou similar.</p>
 
-        <h3>Passo 2: Fazer Upload no GitHub</h3>
-        <p>Você deve enviar este arquivo para o repositório no GitHub, substituindo o antigo.</p>
+        <h3>Passo 2: Salvar como CSV e Fazer Upload</h3>
+        <p>Você deve salvar esse arquivo no formato CSV correto e enviá-lo para o repositório.</p>
         <ol>
-            <li>Abra seu repositório no GitHub.</li>
-            <li>Clique em <strong>"Add file"</strong> (Adicionar arquivo) e depois em <strong>"Upload files"</strong> (Enviar arquivos).</li>
-            <li>Arraste o arquivo JSON que você acabou de baixar para a janela do GitHub.</li>
-            <li><strong>IMPORTANTE:</strong> O GitHub mostrará o nome do arquivo. Clique no ícone de lápis (editar) ao lado do nome e **renomeie o arquivo** para exatamente:
+            <li>No Excel, clique em "Salvar Como".</li>
+            <li>Em "Tipo de arquivo", escolha: <strong>CSV (Separado por vírgulas) (*.csv)</strong>.</li>
+            <li>No nome do arquivo, digite **exatamente**:
                 <br>
-                <strong class="code-highlight" id="targetFileName">base-ncm.json</strong>
+                <strong class="code-highlight" id="targetFileName">Tabela_NCM_Vigente.csv</strong>
             </li>
-            <li>Escreva uma mensagem de commit (ex: "Atualiza base NCM") e clique em <strong>"Commit changes"</strong> (Confirmar alterações).</li>
+            <li>Abra seu repositório no GitHub.</li>
+            <li>Clique em <strong>"Add file"</strong> > <strong>"Upload files"</strong>.</li>
+            <li>Arraste o arquivo `Tabela_NCM_Vigente.csv` que você acabou de salvar.</li>
+            <li>Confirme o envio (Commit changes) para substituir o arquivo antigo.</li>
         </ol>
         <p>Pronto! A página irá carregar a nova base de dados automaticamente.</p>
         
@@ -783,11 +931,14 @@
     <script>
         // Objeto global para armazenar os dados da NCM
         let ncmDatabase = {};
+        // NOVO: Objeto para a árvore hierárquica
+        let ncmTree = {};
         
         let lastVigentes = [];
-        let lastNaoVigentes = []; 
+        let lastNaoVigentes = []; // Esta lista agora conterá Expiradas + Inválidas
 
-        const JSON_FILE = 'base-ncm.json';
+        // ARQUIVO-FONTE ÚNICO (CSV)
+        const CSV_FILE = 'Tabela_NCM_Vigente.csv';
 
         // --- Seleção de Elementos DOM ---
         
@@ -799,8 +950,11 @@
         // --- ABAS (TABS) ---
         const tabBtnVerificador = document.getElementById('tabBtnVerificador');
         const tabBtnComparador = document.getElementById('tabBtnComparador');
+        const tabBtnLivro = document.getElementById('tabBtnLivro'); // Nova Aba
         const abaVerificador = document.getElementById('aba-verificador');
         const abaComparador = document.getElementById('aba-comparador');
+        const abaLivro = document.getElementById('aba-livro'); // Nova Aba
+        const ncmTreeContainer = document.getElementById('ncmTree'); // Container da Árvore
 
         // --- ABA 1: VERIFICADOR ---
         const ncmInput = document.getElementById('ncmInput');
@@ -812,14 +966,20 @@
         const totalVigenteSpan = document.getElementById('totalVigenteSpan');
         const totalNaoVigenteSpan = document.getElementById('totalNaoVigenteSpan');
 
-        const naoVigenteCard = document.getElementById('naoVigenteCard');
-        const naoVigenteCount = document.getElementById('naoVigenteCount');
-        const naoVigenteList = document.getElementById('naoVigenteList');
-
+        // Cards de Resultado do Verificador
         const vigenteCard = document.getElementById('vigenteCard');
         const vigenteCount = document.getElementById('vigenteCount');
         const vigenteList = document.getElementById('vigenteList');
         
+        const expiradoCard = document.getElementById('expiradoCard');
+        const expiradoCount = document.getElementById('expiradoCount');
+        const expiradoList = document.getElementById('expiradoList');
+        
+        const invalidoCard = document.getElementById('invalidoCard');
+        const invalidoCount = document.getElementById('invalidoCount');
+        const invalidoList = document.getElementById('invalidoList');
+        
+        // Caixas de Cópia do Verificador
         const vigenteCopyBox = document.getElementById('vigenteCopyBox');
         const vigenteListText = document.getElementById('vigenteListText');
         const copyVigenteListBtn = document.getElementById('copyVigenteListBtn');
@@ -828,7 +988,7 @@
         const naoVigenteListText = document.getElementById('naoVigenteListText');
         const copyNaoVigenteListBtn = document.getElementById('copyNaoVigenteListBtn');
         
-        // --- ABA 2: COMPARADOR (DOM ATUALIZADO) ---
+        // --- ABA 2: COMPARADOR ---
         const ncmInputGrupo1 = document.getElementById('ncmInputGrupo1');
         const ncmInputGrupo2 = document.getElementById('ncmInputGrupo2');
         const g1InputCount = document.getElementById('g1InputCount'); 
@@ -878,7 +1038,7 @@
         
         const targetFileName = document.getElementById('targetFileName');
         if (targetFileName) {
-            targetFileName.textContent = JSON_FILE;
+            targetFileName.textContent = CSV_FILE;
         }
 
         updateLink.addEventListener('click', (e) => {
@@ -928,18 +1088,26 @@
         // --- LÓGICA DAS ABAS ---
         tabBtnVerificador.addEventListener('click', () => switchTab('verificador'));
         tabBtnComparador.addEventListener('click', () => switchTab('comparador'));
+        tabBtnLivro.addEventListener('click', () => switchTab('livro')); // Nova Aba
 
         function switchTab(tabName) {
+            abaVerificador.classList.add('hidden');
+            abaComparador.classList.add('hidden');
+            abaLivro.classList.add('hidden');
+            
+            tabBtnVerificador.classList.remove('active');
+            tabBtnComparador.classList.remove('active');
+            tabBtnLivro.classList.remove('active');
+            
             if (tabName === 'verificador') {
                 abaVerificador.classList.remove('hidden');
-                abaComparador.classList.add('hidden');
                 tabBtnVerificador.classList.add('active');
-                tabBtnComparador.classList.remove('active');
             } else if (tabName === 'comparador') {
-                abaVerificador.classList.add('hidden');
                 abaComparador.classList.remove('hidden');
-                tabBtnVerificador.classList.remove('active');
                 tabBtnComparador.classList.add('active');
+            } else if (tabName === 'livro') {
+                abaLivro.classList.remove('hidden');
+                tabBtnLivro.classList.add('active');
             }
         }
         
@@ -959,90 +1127,123 @@
         
         copyCompareNaoVigenteG1Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG1Text, "Lista de NCMs não vigentes (G1) copiada!"));
         copyCompareNaoVigenteG2Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG2Text, "Lista de NCMs não vigentes (G2) copiada!"));
+        
+        // --- Listeners ABA 3: LIVRO DA NCMs ---
+        ncmTreeContainer.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('node-label')) {
+                const parentNode = e.target.closest('.tree-node');
+                if (parentNode) {
+                    parentNode.classList.toggle('expanded');
+                }
+            }
+        });
 
 
         /**
-         * Carrega e PROCESSA o arquivo JSON da base de dados NCM.
+         * Carrega e PROCESSA o arquivo CSV da base de dados NCM.
          */
         function loadData() {
             const now = new Date();
             const cacheBuster = `${now.getFullYear()}${now.getMonth()}${now.getDate()}${now.getHours()}`;
-            const fileToFetch = `${JSON_FILE}?v=${cacheBuster}`;
+            const fileToFetch = `${CSV_FILE}?v=${cacheBuster}`;
 
 
             fetch(fileToFetch) 
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`Erro HTTP! Status: ${response.status}. Não foi possível encontrar o arquivo ${JSON_FILE}.`);
+                        throw new Error(`Erro HTTP! Status: ${response.status}. Não foi possível encontrar o arquivo ${CSV_FILE}.`);
                     }
-                    return response.json();
+                    return response.text();
                 })
-                .then(data => {
+                .then(csvText => {
                     
-                    let updateDate = data.Data_Ultima_Atualizacao_NCM;
-                    let dateInfo = `Base de Dados: ${JSON_FILE}`; 
-
-                    if (updateDate) {
-                        const dateMatch = updateDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                        
-                        if (dateMatch) {
-                            const day = dateMatch[1];
-                            const month = dateMatch[2];
-                            const year = dateMatch[3];
-                            
-                            const yyyymmdd = year + month + day;
-                            
-                            const finalFileName = `Tabela_NCM_Vigente_${yyyymmdd}.json`;
-                            dateInfo = `Base de Dados: ${finalFileName}`;
-                        } else {
-                            dateInfo = `Base de Dados: ${JSON_FILE} (Atualizada em: ${updateDate})`;
-                        }
-                    } 
-                    
-                    dataSourceInfo.textContent = dateInfo;
-
-                    let ncmArray = null;
-                    if (Array.isArray(data)) {
-                        ncmArray = data;
-                    } else {
-                        ncmArray = data.Nomenclaturas || data[Object.keys(data).find(k => Array.isArray(data[k]))];
-                    }
-
-                    if (!ncmArray) {
-                        throw new Error("Não foi possível encontrar uma lista (array) de NCMs dentro do arquivo JSON.");
-                    }
-
                     const newDatabase = {};
-                    ncmArray.forEach(item => {
-                        const code = item.Codigo; 
-                        const desc = item.Descricao || item.descricao || item.desc || "Descrição não disponível"; 
+                    const newTree = {};
+                    let vigentesCount = 0; 
+                    
+                    // 1. Processar o CSV
+                    const lines = csvText.split(/\r\n|\n/);
+                    if (lines.length < 2) throw new Error("Arquivo CSV vazio ou inválido.");
+
+                    // Detecta o separador (vírgula ou ponto e vírgula)
+                    const header = lines[0];
+                    const separator = header.includes(';') ? ';' : ',';
+                    
+                    // Encontra os índices das colunas
+                    const headers = header.split(separator).map(h => h.replace(/"/g, ''));
+                    const idxCodigo = headers.indexOf('Codigo');
+                    const idxDesc = headers.indexOf('Descricao');
+                    const idxDataFim = headers.indexOf('Data_Fim') !== -1 ? headers.indexOf('Data_Fim') : headers.indexOf('Data_Fim_Vigencia');
+                    const idxAtoTipo = headers.indexOf('Tipo_Ato_Fim');
+                    const idxAtoNum = headers.indexOf('Numero_Ato_Fim');
+                    const idxAtoAno = headers.indexOf('Ano_Ato_Fim');
+
+                    if (idxCodigo === -1 || idxDesc === -1 || idxDataFim === -1) {
+                        throw new Error(`Cabeçalhos esperados (Codigo, Descricao, Data_Fim) não encontrados no CSV.`);
+                    }
+
+                    // Loop principal para processar o CSV
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i]) continue;
                         
-                        if (code) {
-                            const normalizedCode = code.replace(/\D/g, '');
-                            if (normalizedCode.length === 8) {
-                                newDatabase[normalizedCode] = { 
-                                    desc: desc.replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '') 
-                                };
+                        // Lógica de parsing de CSV simples (não trata aspas dentro de campos)
+                        const values = lines[i].split(separator).map(v => v.replace(/"/g, ''));
+                        
+                        const code = values[idxCodigo].replace(/\D/g, ''); // Limpa código (ex: 0101.21.00 -> 01012100)
+                        const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
+                        
+                        // 2. Alimenta o ncmDatabase (para Abas 1 e 2)
+                        if (code.length === 8) {
+                            const dataFim = values[idxDataFim];
+                            let status = 'expirado';
+                            let endInfo = '';
+                            
+                            if (!dataFim || dataFim.trim() === '31/12/9999') {
+                                status = 'vigente';
+                                vigentesCount++;
+                            } else {
+                                const ato = values[idxAtoTipo] || '';
+                                const num = values[idxAtoNum] || '';
+                                const ano = values[idxAtoAno] || '';
+                                
+                                let atoInfo = `${ato} ${num} de ${ano}`.replace('  ', ' ').trim();
+                                if (atoInfo.startsWith('de ')) atoInfo = ''; 
+                                if (atoInfo === 'de') atoInfo = '';
+                                endInfo = `Fim: ${dataFim}${atoInfo ? ` (${atoInfo})` : ''}`;
                             }
+                            
+                            ncmDatabase[code] = { 
+                                desc: desc,
+                                status: status,
+                                endInfo: endInfo
+                            };
                         }
-                    });
+                        
+                        // 3. Alimenta a ncmTree (para Aba 3)
+                        buildTree(newTree, code, desc);
+                    }
                     
                     ncmDatabase = newDatabase; 
+                    ncmTree = newTree;
 
                     if (Object.keys(ncmDatabase).length === 0) {
                         throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                     }
+                    
+                    // 4. Renderiza a Árvore (Aba 3)
+                    renderNCMTree(ncmTree, ncmTreeContainer);
 
-                    const totalNcmsInDb = Object.keys(ncmDatabase).length;
+                    // 5. Atualiza a UI
+                    dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
                     if (databaseStatsInfo) {
-                        databaseStatsInfo.textContent = `Total de ${totalNcmsInDb.toLocaleString('pt-BR')} NCMs vigentes na base.`;
+                        databaseStatsInfo.textContent = `Total de ${vigentesCount.toLocaleString('pt-BR')} NCMs vigentes na base.`;
                     }
 
-                    showToast('Base de dados NCM carregada e processada com sucesso!', 'success');
+                    showToast('Base de dados NCM (CSV) carregada e processada!', 'success');
                 })
                 .catch(error => {
-                    console.error('Erro ao carregar o arquivo JSON:', error);
-                    dataSourceInfo.textContent = `Erro ao carregar ${JSON_FILE}. Verifique o console (F12).`;
+                    console.error('Erro ao carregar o arquivo CSV:', error);
+                    dataSourceInfo.textContent = `Erro ao carregar ${CSV_FILE}. Verifique o console (F12).`;
                     
                     if(databaseStatsInfo) {
                         databaseStatsInfo.classList.add('hidden');
@@ -1051,8 +1252,8 @@
                     showToast(`ERRO: ${error.message}. Verifique o console (F12).`, 'error');
                 });
         }
-
-
+        
+        
         /**
          * Função principal que processa a verificação. (ABA 1)
          */
@@ -1081,43 +1282,42 @@
             }
 
             const vigentes = [];
-            const naoVigentes = [];
+            const expiradas = [];
+            const invalidas = [];
 
             uniqueNcms.forEach(ncm => {
                 const ncmData = ncmDatabase[ncm];
                 
                 if (ncmData) {
-                    vigentes.push({
-                        code: ncm,
-                        desc: ncmData.desc
-                    });
+                    if (ncmData.status === 'vigente') {
+                        vigentes.push({ code: ncm, desc: ncmData.desc });
+                    } else { // status === 'expirado'
+                        expiradas.push({ code: ncm, desc: ncmData.desc, endInfo: ncmData.endInfo });
+                    }
                 } else {
-                    naoVigentes.push({
-                        code: ncm,
-                        desc: "NCM não vigente ou inválida." 
-                    });
+                    invalidas.push({ code: ncm, desc: "NCM não encontrada na base de dados." });
                 }
             });
             
-            lastVigentes = vigentes;
-            lastNaoVigentes = naoVigentes; 
-
-            displayResults(vigentes, naoVigentes, uniqueNcms.length);
+            displayResults(vigentes, expiradas, invalidas);
         }
 
         /**
          * Exibe os resultados nas seções corretas. (ABA 1)
          */
-        function displayResults(vigentes, naoVigentes, total) {
+        function displayResults(vigentes, expiradas, invalidas) {
             vigenteList.innerHTML = '';
-            naoVigenteList.innerHTML = '';
-
+            expiradoList.innerHTML = '';
+            invalidoList.innerHTML = '';
+            
+            const total = vigentes.length + expiradas.length + invalidas.length;
+            
             totalProcessedSpan.textContent = total;
             totalVigenteSpan.textContent = vigentes.length;
-            totalNaoVigenteSpan.textContent = naoVigentes.length;
-            vigenteCount.textContent = vigentes.length;
-            naoVigenteCount.textContent = naoVigentes.length;
+            // "Não Vigentes" no resumo = Expiradas + Inválidas
+            totalNaoVigenteSpan.textContent = expiradas.length + invalidas.length; 
 
+            // Card VIGENTES
             if (vigentes.length > 0) {
                 let vigenteHtml = '';
                 [...vigentes].sort((a, b) => a.code.localeCompare(b.code)).forEach(item => {
@@ -1131,23 +1331,43 @@
                     `;
                 });
                 vigenteList.innerHTML = vigenteHtml;
+                vigenteCount.textContent = vigentes.length;
                 vigenteCard.classList.remove('hidden');
-
-                const vigenteString = [...vigentes].sort((a, b) => a.code.localeCompare(b.code))
-                                                   .map(item => formatNCM(item.code))
-                                                   .join(', '); 
-                vigenteListText.value = vigenteString;
+                vigenteListText.value = [...vigentes].sort((a, b) => a.code.localeCompare(b.code))
+                                                    .map(item => formatNCM(item.code))
+                                                    .join(', '); 
                 vigenteCopyBox.classList.remove('hidden');
-
             } else {
                 vigenteCard.classList.add('hidden');
                 vigenteCopyBox.classList.add('hidden'); 
             }
 
-            if (naoVigentes.length > 0) {
-                let naoVigenteHtml = '';
-                [...naoVigentes].sort((a, b) => a.code.localeCompare(b.code)).forEach(item => {
-                    naoVigenteHtml += `
+            // Card EXPIRADAS
+            if (expiradas.length > 0) {
+                let expiradoHtml = '';
+                [...expiradas].sort((a, b) => a.code.localeCompare(b.code)).forEach(item => {
+                    expiradoHtml += `
+                        <div class="result-item">
+                            <div>
+                                <span><strong>${formatNCM(item.code)}</strong></span>
+                                <div class="ncm-desc">${item.desc}</div>
+                                <div class="ncm-expirada">${item.endInfo}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                expiradoList.innerHTML = expiradoHtml;
+                expiradoCount.textContent = expiradas.length;
+                expiradoCard.classList.remove('hidden');
+            } else {
+                expiradoCard.classList.add('hidden');
+            }
+            
+            // Card INVÁLIDAS
+            if (invalidas.length > 0) {
+                let invalidoHtml = '';
+                [...invalidas].sort((a, b) => a.code.localeCompare(b.code)).forEach(item => {
+                    invalidoHtml += `
                         <div class="result-item">
                             <div>
                                 <span><strong>${formatNCM(item.code)}</strong></span>
@@ -1156,16 +1376,21 @@
                         </div>
                     `;
                 });
-                naoVigenteList.innerHTML = naoVigenteHtml;
-                naoVigenteCard.classList.remove('hidden');
+                invalidoList.innerHTML = invalidoHtml;
+                invalidoCount.textContent = invalidas.length;
+                invalidoCard.classList.remove('hidden');
+            } else {
+                invalidoCard.classList.add('hidden');
+            }
 
-                const naoVigenteString = [...naoVigentes].sort((a, b) => a.code.localeCompare(b.code))
+            // Caixa de Cópia "Não Vigentes" (Expiradas + Inválidas)
+            const naoVigentes = [...expiradas, ...invalidas];
+            if (naoVigentes.length > 0) {
+                 const naoVigenteString = naoVigentes.sort((a, b) => a.code.localeCompare(b.code))
                     .map(item => formatNCM(item.code)).join(', ');
                 naoVigenteListText.value = naoVigenteString;
                 naoVigenteCopyBox.classList.remove('hidden');
-
             } else {
-                naoVigenteCard.classList.add('hidden');
                 naoVigenteCopyBox.classList.add('hidden'); 
             }
             
@@ -1178,7 +1403,8 @@
         function clearResults() {
             ncmInput.value = '';
             vigenteList.innerHTML = '';
-            naoVigenteList.innerHTML = '';
+            expiradoList.innerHTML = '';
+            invalidoList.innerHTML = '';
             
             vigenteListText.value = '';
             naoVigenteListText.value = ''; 
@@ -1189,7 +1415,8 @@
 
             statsCard.classList.add('hidden');
             vigenteCard.classList.add('hidden');
-            naoVigenteCard.classList.add('hidden');
+            expiradoCard.classList.add('hidden');
+            invalidoCard.classList.add('hidden');
             
             vigenteCopyBox.classList.add('hidden');
             naoVigenteCopyBox.classList.add('hidden'); 
@@ -1219,12 +1446,9 @@
         }
         
         // ==========================================================
-        // NOVAS FUNÇÕES: ABA 2 (COMPARADOR)
+        // FUNÇÕES: ABA 2 (COMPARADOR)
         // ==========================================================
         
-        /**
-         * Função principal que processa a comparação. (ABA 2)
-         */
         function compareNCMs() {
             if (Object.keys(ncmDatabase).length === 0) {
                 showToast("A base de dados NCM não foi carregada. Verifique o erro de carregamento.", "error");
@@ -1259,9 +1483,13 @@
 
             // 1. Processa NCMs em G1
             setG1.forEach(ncm => {
-                const isVigente = ncmDatabase.hasOwnProperty(ncm);
-                if (!isVigente) {
-                    naoVigentesG1.push(ncm);
+                const ncmData = ncmDatabase[ncm];
+                let isVigente = false;
+                
+                if (ncmData && ncmData.status === 'vigente') {
+                    isVigente = true;
+                } else {
+                    naoVigentesG1.push(ncm); // Inclui Expiradas e Inválidas
                 }
                 
                 if (setG2.has(ncm)) {
@@ -1275,9 +1503,13 @@
 
             // 2. Processa NCMs em G2
             setG2.forEach(ncm => {
-                const isVigente = ncmDatabase.hasOwnProperty(ncm);
-                if (!isVigente) {
-                    naoVigentesG2.push(ncm);
+                const ncmData = ncmDatabase[ncm];
+                let isVigente = false;
+                
+                if (ncmData && ncmData.status === 'vigente') {
+                    isVigente = true;
+                } else {
+                    naoVigentesG2.push(ncm); // Inclui Expiradas e Inválidas
                 }
                 
                 if (!setG1.has(ncm)) {
@@ -1293,37 +1525,30 @@
             showToast("Comparação concluída!", "success");
         }
         
-        /**
-         * Limpa todas as entradas e resultados. (ABA 2)
-         */
         function clearCompareResults() {
             ncmInputGrupo1.value = '';
             ncmInputGrupo2.value = '';
             g1InputCount.textContent = ''; 
             g2InputCount.textContent = ''; 
             
-            // Limpa caixas de cópia
             comumListText.value = '';
             exclusivoG1ListText.value = '';
             exclusivoG2ListText.value = '';
             compareNaoVigenteG1Text.value = '';
             compareNaoVigenteG2Text.value = '';
             
-            // Limpa placeholders
             comumListText.placeholder = '';
             exclusivoG1ListText.placeholder = '';
             exclusivoG2ListText.placeholder = '';
             compareNaoVigenteG1Text.placeholder = '';
             compareNaoVigenteG2Text.placeholder = '';
             
-            // Reseta títulos das caixas de cópia
             exclusivoG1CopyTitle.textContent = getPluralText(0, "NCM vigente contida apenas no Grupo 1", "NCMs vigentes contidas apenas no Grupo 1");
             exclusivoG2CopyTitle.textContent = getPluralText(0, "NCM vigente contida apenas no Grupo 2", "NCMs vigentes contidas apenas no Grupo 2");
             comumCopyTitle.textContent = getPluralText(0, "NCM comum aos dois Grupos", "NCMs comuns aos dois Grupos");
             naoVigenteG1CopyTitle.textContent = getPluralText(0, "NCM Não Vigente (Grupo 1)", "NCMs Não Vigentes (Grupo 1)");
             naoVigenteG2CopyTitle.textContent = getPluralText(0, "NCM Não Vigente (Grupo 2)", "NCMs Não Vigentes (Grupo 2)");
             
-            // Esconde todas as caixas de resultado
             comumCopyBox.classList.add('hidden');
             exclusivoG1CopyBox.classList.add('hidden');
             exclusivoG2CopyBox.classList.add('hidden');
@@ -1333,27 +1558,10 @@
             showToast("Campos de comparação limpos!", "info");
         }
         
-        /**
-         * Pega um texto e retorna um Set de NCMs
-         */
-        function extractNcms(text) {
-             const cleanedText = text.replace(/[^0-9\n\r,; ]/g, '');
-            const potentialNcms = cleanedText.split(/[\n\r,; ]+/);
-            const uniqueNcms = new Set(potentialNcms
-                .map(ncm => ncm.replace(/\D/g, ''))
-                .filter(ncm => ncm.length === 8));
-            return uniqueNcms;
-        }
-        
-        /**
-         * Exibe os resultados da comparação (ABA 2)
-         */
         function displayCompareResults(comum, g1, g2, naoVigentesG1, naoVigentesG2) {
             
-            // Função helper para criar o texto LIMPO (para cópia)
             const formatCompareText = (item) => formatNCM(item);
             
-            // Ordena as listas
             comum.sort();
             g1.sort();
             g2.sort();
@@ -1416,15 +1624,11 @@
             }
         }
         
-        /**
-         * Retorna o texto correto para singular/plural com contagem
-         */
         function getPluralText(count, singularText, pluralText) {
             const text = count === 1 ? singularText : pluralText;
             return `${text} - (${count})`;
         }
         
-        // Função de cópia genérica para as textareas do comparador
         function copyCompareList(textareaElement, successMessage) {
             const textToCopy = textareaElement.value;
             if (textToCopy) {
@@ -1435,8 +1639,175 @@
         }
         
         // ==========================================================
+        // FUNÇÕES: ABA 3 (LIVRO DA NCMs)
+        // ==========================================================
+
+        /**
+         * Constrói a árvore hierárquica a partir do código e descrição.
+         */
+        function buildTree(tree, code, desc) {
+            // Níveis: 01 (Cap), 0101 (Pos), 010121 (Sub1), 01012100 (Sub2/Item)
+            // O CSV tem códigos de 2, 4, 6, 7 e 8 dígitos.
+            
+            // Ignora Seções (vamos adicionar manualmente) e códigos não-padrão
+            if (code.length < 2 || code.length > 8 || code.length === 3 || code.length === 5) {
+                return;
+            }
+
+            // Pega os nós
+            const cap = code.substring(0, 2);
+            const pos = code.length >= 4 ? code.substring(0, 4) : null;
+            const sub1 = code.length >= 6 ? code.substring(0, 6) : null;
+            const item = code.length >= 7 ? code.substring(0, 7) : null;
+            const subitem = code.length === 8 ? code : null; // NCM final
+
+            // Garante que o Capítulo exista
+            if (!tree[cap]) tree[cap] = { desc: (code.length === 2 ? desc : '...'), children: {} };
+            if (code.length === 2) tree[cap].desc = desc;
+
+            // Posição
+            if (pos && !tree[cap].children[pos]) tree[cap].children[pos] = { desc: (code.length === 4 ? desc : '...'), children: {} };
+            if (code.length === 4) tree[cap].children[pos].desc = desc;
+
+            // Subposição 1
+            if (sub1 && !tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: (code.length === 6 ? desc : '...'), children: {} };
+            if (code.length === 6) tree[cap].children[pos].children[sub1].desc = desc;
+            
+            // Item
+            if (item && !tree[cap].children[pos].children[sub1].children[item]) tree[cap].children[pos].children[sub1].children[item] = { desc: (code.length === 7 ? desc : '...'), children: {} };
+            if (code.length === 7) tree[cap].children[pos].children[sub1].children[item].desc = desc;
+
+            // Subitem (NCM)
+            if (subitem) {
+                tree[cap].children[pos].children[sub1].children[item].children[subitem] = { desc: desc, children: {} }; // Nível 5
+            }
+        }
+        
+        /**
+         * Adiciona a lista estática de Seções (Nível 0)
+         */
+        const secoesNCM = {
+            "I": { "nome": "Seção I - ANIMAIS VIVOS E PRODUTOS DO REINO ANIMAL", "caps": ["01", "02", "03", "04", "05"] },
+            "II": { "nome": "Seção II - PRODUTOS DO REINO VEGETAL", "caps": ["06", "07", "08", "09", "10", "11", "12", "13", "14"] },
+            "III": { "nome": "Seção III - GORDURAS E ÓLEOS...", "caps": ["15"] },
+            "IV": { "nome": "Seção IV - PRODUTOS DAS INDÚSTRIAS ALIMENTARES...", "caps": ["16", "17", "18", "19", "20", "21", "22", "23", "24"] },
+            "V": { "nome": "Seção V - PRODUTOS MINERAIS", "caps": ["25", "26", "27"] },
+            "VI": { "nome": "Seção VI - PRODUTOS DAS INDÚSTRIAS QUÍMICAS...", "caps": ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38"] },
+            "VII": { "nome": "Seção VII - PLÁSTICO E SUAS OBRAS; BORRACHA E SUAS OBRAS", "caps": ["39", "40"] },
+            "VIII": { "nome": "Seção VIII - PELES, COUROS, PELES COM PELO...", "caps": ["41", "42", "43"] },
+            "IX": { "nome": "Seção IX - MADEIRA, CARVÃO VEGETAL E OBRAS DE MADEIRA...", "caps": ["44", "45", "46"] },
+            "X": { "nome": "Seção X - PASTAS DE MADEIRA OU DE OUTRAS MATÉRIAS FIBROSAS...", "caps": ["47", "48", "49"] },
+            "XI": { "nome": "Seção XI - MATÉRIAS TÊXTEIS E SUAS OBRAS", "caps": ["50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"] },
+            "XII": { "nome": "Seção XII - CALÇADO, CHAPÉUS E ARTIGOS DE USO SEMELHANTE...", "caps": ["64", "65", "66", "67"] },
+            "XIII": { "nome": "Seção XIII - OBRAS DE PEDRA, GESSO, CIMENTO...", "caps": ["68", "69", "70"] },
+            "XIV": { "nome": "Seção XIV - PÉROLAS NATURAIS OU CULTIVADAS, PEDRAS PRECIOSAS...", "caps": ["71"] },
+            "XV": { "nome": "Seção XV - METAIS COMUNS E SUAS OBRAS", "caps": ["72", "73", "74", "75", "76", "78", "79", "80", "81", "82", "83"] },
+            "XVI": { "nome": "Seção XVI - MÁQUINAS E APARELHOS, MATERIAL ELÉTRICO...", "caps": ["84", "85"] },
+            "XVII": { "nome": "Seção XVII - MATERIAL DE TRANSPORTE", "caps": ["86", "87", "88", "89"] },
+            "XVIII": { "nome": "Seção XVIII - INSTRUMENTOS E APARELHOS DE ÓPTICA...", "caps": ["90", "91", "92"] },
+            "XIX": { "nome": "Seção XIX - ARMAS E MUNIÇÕES...", "caps": ["93"] },
+            "XX": { "nome": "Seção XX - MERCADORIAS E PRODUTOS DIVERSOS", "caps": ["94", "95", "96"] },
+            "XXI": { "nome": "Seção XXI - OBJETOS DE ARTE, DE COLEÇÃO E ANTIGUIDADES", "caps": ["97"] }
+        };
+
+        /**
+         * Renderiza a árvore NCM no container
+         */
+        function renderNCMTree(tree, container) {
+            container.innerHTML = ''; // Limpa
+            
+            // Itera sobre as Seções estáticas
+            for (const secaoId in secoesNCM) {
+                const secao = secoesNCM[secaoId];
+                const secaoNode = createTreeNode(secao.nome, 0);
+                
+                // Itera sobre os Capítulos (da lista estática)
+                secao.caps.forEach(capId => {
+                    const capData = tree[capId];
+                    if (capData) {
+                        const capNode = createTreeNode(`${capId} - ${capData.desc}`, 1);
+                        // Constrói recursivamente o resto da árvore
+                        buildRecursiveTree(capData.children, capNode.querySelector('.sub-tree'), 2);
+                        secaoNode.querySelector('.sub-tree').appendChild(capNode);
+                    }
+                });
+                container.appendChild(secaoNode);
+            }
+        }
+        
+        /**
+         * Constrói recursivamente os nós da árvore
+         */
+        function buildRecursiveTree(children, parentElement, level) {
+            const keys = Object.keys(children).sort(); // Ordena os filhos
+            
+            keys.forEach(key => {
+                const data = children[key];
+                const hasChildren = Object.keys(data.children).length > 0;
+                
+                // Formata o código
+                let formattedCode = key;
+                if (level === 2) formattedCode = key.substring(0, 4); // Posição
+                if (level === 3) formattedCode = `${key.substring(0, 4)}.${key.substring(4, 6)}`; // Subposição 1
+                if (level === 4) formattedCode = `${key.substring(0, 4)}.${key.substring(4, 6)}.${key.substring(6, 7)}`; // Item
+                if (level === 5) formattedCode = formatNCM(key); // Subitem (NCM)
+                
+                const node = createTreeNode(`${formattedCode} - ${data.desc}`, level, !hasChildren);
+                
+                if (hasChildren) {
+                    buildRecursiveTree(data.children, node.querySelector('.sub-tree'), level + 1);
+                }
+                parentElement.appendChild(node);
+            });
+        }
+        
+        /**
+         * Cria um único nó (LI) para a árvore
+         */
+        function createTreeNode(text, level, isLeaf = false) {
+            const li = document.createElement('li');
+            li.className = `tree-node level-${level}`;
+            
+            const label = document.createElement('span');
+            label.className = 'node-label';
+            label.textContent = text;
+            li.appendChild(label);
+            
+            if (!isLeaf) {
+                const subTree = document.createElement('ul');
+                subTree.className = 'sub-tree';
+                li.appendChild(subTree);
+            }
+            return li;
+        }
+
+        
+        // ==========================================================
         // FUNÇÕES UTILITÁRIAS (COMPARTILHADAS)
         // ==========================================================
+        
+        function getPluralText(count, singularText, pluralText) {
+            const text = count === 1 ? singularText : pluralText;
+            return `${text} - (${count})`;
+        }
+        
+        function copyCompareList(textareaElement, successMessage) {
+            const textToCopy = textareaElement.value;
+            if (textToCopy) {
+                copyToClipboard(textToCopy, successMessage);
+            } else {
+                showToast("Não há NCMs para copiar.", "warn");
+            }
+        }
+
+        function extractNcms(text) {
+             const cleanedText = text.replace(/[^0-9\n\r,; ]/g, '');
+            const potentialNcms = cleanedText.split(/[\n\r,; ]+/);
+            const uniqueNcms = new Set(potentialNcms
+                .map(ncm => ncm.replace(/\D/g, ''))
+                .filter(ncm => ncm.length === 8));
+            return uniqueNcms;
+        }
 
         function formatNCM(ncm) {
             if (ncm.length !== 8) return ncm;
