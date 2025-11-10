@@ -1153,23 +1153,6 @@
                 }
                 const buffer = await response.arrayBuffer();
 
-                // Tenta decodificar como UTF-8
-                try {
-                    const decoder = new TextDecoder('utf-8'); 
-                    csvText = decoder.decode(buffer);
-                    encodingUsed = 'UTF-8';
-                    // Testa se a decodificação funcionou
-                    if (!csvText.includes("Descrição")) {
-                         throw new Error("Não é UTF-8 válido, tentando latin1.");
-                    }
-                } catch (e) {
-                    // Se falhar, tenta latin1 (iso-8859-1)
-                    console.warn("Falha ao decodificar UTF-8, tentando iso-8859-1 (latin1)...");
-                    const decoder = new TextDecoder('iso-8859-1');
-                    csvText = decoder.decode(buffer);
-                    encodingUsed = 'iso-8859-1';
-                }
-
                 // Função helper para checar os cabeçalhos
                 const findHeaders = (text) => {
                     const lines = text.split(/\r\n|\n/);
@@ -1182,9 +1165,9 @@
                         }
                     }
                     
-                    // Fallback para nomes sem acento (se o latin1 falhar)
+                    // Fallback para nomes sem acento
                     if (headerLineIndex === -1) {
-                        for (let i = 0; i < 10; i++) {
+                         for (let i = 0; i < 10; i++) {
                             if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
                                 headerLineIndex = i;
                                 break;
@@ -1198,7 +1181,6 @@
                     const separator = header.includes(';') ? ';' : ',';
                     const headers = header.split(separator).map(h => h.replace(/"/g, '').trim());
                     
-                    // Procura pelos nomes de coluna (com ou sem acento)
                     const idxCodigo = headers.findIndex(h => h.toLowerCase().startsWith('código') || h.toLowerCase().startsWith('codigo'));
                     const idxDesc = headers.findIndex(h => h.toLowerCase().startsWith('descrição') || h.toLowerCase().startsWith('descricao'));
                     const idxDataFim = headers.findIndex(h => h.toLowerCase().startsWith('data fim') || h.toLowerCase().startsWith('data_fim'));
@@ -1208,8 +1190,22 @@
                     return { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator };
                 };
                 
-                const parsedData = findHeaders(csvText);
+                // Tenta UTF-8
+                let decoder = new TextDecoder('utf-8');
+                csvText = decoder.decode(buffer);
+                encodingUsed = 'UTF-8';
+                let parsedData = findHeaders(csvText);
+                
+                // Se falhar (caracteres quebrados), tenta latin1
+                if (!parsedData) {
+                    console.warn("Não foi possível encontrar cabeçalhos com UTF-8. Tentando com iso-8859-1 (latin1)...");
+                    decoder = new TextDecoder('iso-8859-1');
+                    csvText = decoder.decode(buffer);
+                    encodingUsed = 'iso-8859-1';
+                    parsedData = findHeaders(csvText);
+                }
 
+                // Se falhar de novo, lança o erro
                 if (!parsedData) {
                     throw new Error(`Cabeçalhos (Código, Descrição, Data Fim) não encontrados no CSV. Verifique o arquivo.`);
                 }
@@ -1251,7 +1247,9 @@
                             endInfo = `Fim: ${dataFim}`;
                         }
                         
-                        ncmDatabase[code] = { 
+                        // *** A CORREÇÃO ESTÁ AQUI ***
+                        // Adiciona ao NEWDatabase, não ao ncmDatabase
+                        newDatabase[code] = { 
                             desc: desc,
                             status: status,
                             endInfo: endInfo
@@ -1262,7 +1260,7 @@
                     buildTree(newTree, codeRaw, desc);
                 }
                 
-                ncmDatabase = newDatabase; 
+                ncmDatabase = newDatabase; // Atribuição correta
                 ncmTree = newTree;
 
                 if (Object.keys(ncmDatabase).length === 0) {
@@ -1688,36 +1686,66 @@
         }
         
         // ==========================================================
-        // FUNÇÕES: ABA 3 (LIVRO DA NCMs)
+        // FUNÇÕES: ABA 3 (LIVRO DE NCMs)
         // ==========================================================
 
         function buildTree(tree, code, desc) {
             const cleanCode = code.replace(/\D/g, ''); 
             
-            if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
+            // Pula NCMs de 8 dígitos (elas não são "pais" na árvore)
+            if (cleanCode.length === 8) {
                 return;
             }
-
-            const cap = cleanCode.substring(0, 2);
-            const pos = cleanCode.length >= 4 ? cleanCode.substring(0, 4) : null;
-            const sub1 = cleanCode.length >= 6 ? cleanCode.substring(0, 6) : null;
-            const item = cleanCode.length >= 7 ? cleanCode.substring(0, 7) : null;
-            const subitem = cleanCode.length === 8 ? cleanCode : null; 
-
-            if (!tree[cap]) tree[cap] = { desc: (cleanCode.length === 2 ? desc : '...'), code: code, children: {} };
-            if (cleanCode.length === 2) tree[cap].desc = desc;
-
-            if (pos && !tree[cap].children[pos]) tree[cap].children[pos] = { desc: (cleanCode.length === 4 ? desc : '...'), code: code, children: {} };
-            if (cleanCode.length === 4) tree[cap].children[pos].desc = desc;
-
-            if (sub1 && !tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: (cleanCode.length === 6 ? desc : '...'), code: code, children: {} };
-            if (cleanCode.length === 6) tree[cap].children[pos].children[sub1].desc = desc;
             
-            if (item && !tree[cap].children[pos].children[sub1].children[item]) tree[cap].children[pos].children[sub1].children[item] = { desc: (cleanCode.length === 7 ? desc : '...'), code: code, children: {} };
-            if (cleanCode.length === 7) tree[cap].children[pos].children[sub1].children[item].desc = desc;
+            if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
+                 // Permite códigos como 0101.2 (length 5)
+                 if(cleanCode.length !== 5) return;
+            }
 
-            if (subitem) {
-                tree[cap].children[pos].children[sub1].children[item].children[subitem] = { desc: desc, code: code, children: {} }; // Nível 5
+            // Nível 1: Capítulo (01)
+            if (cleanCode.length === 2) {
+                if (!tree[cleanCode]) tree[cleanCode] = { desc: desc, code: code, children: {} };
+                tree[cleanCode].desc = desc; // Atualiza desc caso venha depois
+            }
+            // Nível 2: Posição (01.01 -> 0101)
+            else if (cleanCode.length === 4) {
+                const cap = cleanCode.substring(0, 2);
+                if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
+                if (!tree[cap].children[cleanCode]) tree[cap].children[cleanCode] = { desc: desc, code: code, children: {} };
+                tree[cap].children[cleanCode].desc = desc;
+            }
+            // Nível 3: Subposição 1 (0101.2 -> 01012)
+            else if (cleanCode.length === 5) { 
+                const cap = cleanCode.substring(0, 2);
+                const pos = cleanCode.substring(0, 4);
+                if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
+                if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
+                if (!tree[cap].children[pos].children[cleanCode]) tree[cap].children[pos].children[cleanCode] = { desc: desc, code: code, children: {} };
+                tree[cap].children[pos].children[cleanCode].desc = desc;
+            }
+            // Nível 4: Subposição 2 (0101.21 -> 010121)
+            else if (cleanCode.length === 6) {
+                const cap = cleanCode.substring(0, 2);
+                const pos = cleanCode.substring(0, 4);
+                const sub1 = cleanCode.substring(0, 5); // Chave do pai é '01012'
+                if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
+                if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
+                if (!tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: '...', code: cleanCode.substring(0, 5), children: {} };
+                if (!tree[cap].children[pos].children[sub1].children[cleanCode]) tree[cap].children[pos].children[sub1].children[cleanCode] = { desc: desc, code: code, children: {} };
+                tree[cap].children[pos].children[sub1].children[cleanCode].desc = desc;
+            }
+            // Nível 5: Item (0101.21.0 -> 0101210)
+            else if (cleanCode.length === 7) {
+                const cap = cleanCode.substring(0, 2);
+                const pos = cleanCode.substring(0, 4);
+                const sub1 = cleanCode.substring(0, 5);
+                const sub2 = cleanCode.substring(0, 6);
+                if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
+                if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
+                if (!tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: '...', code: sub1, children: {} };
+                if (!tree[cap].children[pos].children[sub1].children[sub2]) tree[cap].children[pos].children[sub1].children[sub2] = { desc: '...', code: sub2, children: {} };
+                if (!tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode]) tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode] = { desc: desc, code: code, children: {} };
+                tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode].desc = desc;
             }
         }
         
@@ -1771,6 +1799,7 @@
                 const data = children[key];
                 const hasChildren = Object.keys(data.children).length > 0;
                 
+                // Nível 5 é a folha (NCM 8 dígitos)
                 const isLeaf = (level === 5 || !hasChildren); 
                 
                 const node = createTreeNode(`${data.code} - ${data.desc}`, level, isLeaf);
