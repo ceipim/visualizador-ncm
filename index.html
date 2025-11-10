@@ -202,20 +202,19 @@
             color: var(--color-primary-dark); 
         }
         
-        .comparador-grid {
+        /* GRADE DE INPUT DO COMPARADOR (2 Colunas) */
+        .comparador-input-grid {
             display: grid;
             grid-template-columns: 1fr; 
             gap: 1.5rem;
-            margin-top: 1.5rem;
         }
-
         @media (min-width: 768px) {
-            .comparador-grid {
+            .comparador-input-grid {
                 grid-template-columns: 1fr 1fr;
             }
         }
         
-        .comparador-grid textarea {
+        .comparador-input-grid textarea {
             width: 100%;
             height: 180px; 
             font-family: 'Courier New', Courier, monospace;
@@ -226,17 +225,31 @@
             resize: vertical;
         }
         
-        .comparador-grid h3 {
+        .comparador-input-grid h3 {
             border-bottom: 1px solid var(--color-border);
             padding-bottom: 0.5rem;
         }
+
+        /* NOVA GRADE DE RESULTADOS DO COMPARADOR (2 Colunas) */
+        .comparador-results-grid {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .comparador-results-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
 
         .summary-copy-box {
             background: var(--color-bg-light);
             border-radius: 12px;
             box-shadow: 0 6px 12px var(--color-shadow);
             padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            /* margin-bottom removido, pois a grade cuida do espaçamento */
             border: 1px solid var(--color-border);
         }
         .summary-copy-box h3 {
@@ -250,7 +263,7 @@
         .summary-copy-box .input-group {
             display: flex;
             gap: 0.75rem;
-            align-items: center; /* <-- CORREÇÃO ESTÁ AQUI */
+            align-items: center; /* CORRIGE ALTURA DO BOTÃO */
         }
          .summary-copy-box textarea {
             width: 100%;
@@ -317,7 +330,7 @@
             border: 1px solid var(--color-border);
             display: flex;
             gap: 1rem;
-            align-items: center; /* <-- CORREÇÃO ADICIONADA AQUI TAMBÉM */
+            align-items: center; /* CORRIGE ALTURA DO BOTÃO */
         }
 
         .copy-box textarea {
@@ -349,11 +362,7 @@
             }
         }
         
-        @media (min-width: 1200px) {
-            .results-container.comparador {
-                grid-template-columns: 1fr 1fr 1fr;
-            }
-        }
+        /* Removemos o layout de 3 colunas dos cards coloridos pois não existem mais */
         
         .result-card.nao-vigente {
             background-color: var(--color-error);
@@ -362,28 +371,6 @@
         .result-card.vigente {
             background-color: var(--color-success);
             border-color: var(--color-success-border);
-        }
-        
-        .result-card.comum {
-            background-color: #e6e0f8; 
-            border-color: #c5b8f3;
-        }
-        .result-card.comum h3 {
-            color: #49397e;
-        }
-        .result-card.exclusivo {
-            background-color: #e0f2f1; 
-            border-color: #b2dfdb;
-        }
-         .result-card.exclusivo h3 {
-            color: #004d40;
-        }
-        
-        .result-item .ncm-nao-vigente {
-            font-size: 0.8rem;
-            color: var(--color-error-dark);
-            font-weight: bold;
-            margin-top: 2px;
         }
         
         .result-card h3 {
@@ -669,7 +656,7 @@
             <div class="card">
                 <h2>1. Cole suas NCMs para Comparar</h2>
                 
-                <div class="comparador-grid">
+                <div class="comparador-input-grid">
                     <div>
                         <h3>Grupo 1 <span id="g1InputCount"></span></h3>
                         <textarea id="ncmInputGrupo1" placeholder="Cole a primeira lista de NCMs aqui..."></textarea>
@@ -686,19 +673,42 @@
                 </div>
             </div>
             
-            <div class="summary-copy-box exclusivo hidden" id="exclusivoG1CopyBox">
-                <h3 id="exclusivoG1CopyTitle">NCMs vigentes contidas apenas no Grupo 1 - (0)</h3>
-                <div class="input-group">
-                    <textarea id="exclusivoG1ListText" readonly title="NCMs apenas no G1, separadas por vírgula."></textarea>
-                    <button id="copyExclusivoG1Btn" class="success">Copiar</button>
+            <div class="comparador-results-grid">
+                
+                <div>
+                    <div class="summary-copy-box exclusivo hidden" id="exclusivoG1CopyBox">
+                        <h3 id="exclusivoG1CopyTitle">NCMs vigentes contidas apenas no Grupo 1 - (0)</h3>
+                        <div class="input-group">
+                            <textarea id="exclusivoG1ListText" readonly title="NCMs apenas no G1, separadas por vírgula."></textarea>
+                            <button id="copyExclusivoG1Btn" class="success">Copiar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG1Box">
+                        <h3 id="naoVigenteG1CopyTitle">NCMs Não Vigentes (Grupo 1) - (0)</h3>
+                        <div class="input-group">
+                            <textarea id="compareNaoVigenteG1Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 1."></textarea>
+                            <button id="copyCompareNaoVigenteG1Btn" class="danger">Copiar</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="summary-copy-box exclusivo hidden" id="exclusivoG2CopyBox">
-                <h3 id="exclusivoG2CopyTitle">NCMs vigentes contidas apenas no Grupo 2 - (0)</h3>
-                <div class="input-group">
-                    <textarea id="exclusivoG2ListText" readonly title="NCMs apenas no G2, separadas por vírgula."></textarea>
-                    <button id="copyExclusivoG2Btn" class="success">Copiar</button>
+                
+                <div>
+                    <div class="summary-copy-box exclusivo hidden" id="exclusivoG2CopyBox">
+                        <h3 id="exclusivoG2CopyTitle">NCMs vigentes contidas apenas no Grupo 2 - (0)</h3>
+                        <div class="input-group">
+                            <textarea id="exclusivoG2ListText" readonly title="NCMs apenas no G2, separadas por vírgula."></textarea>
+                            <button id="copyExclusivoG2Btn" class="success">Copiar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG2Box">
+                        <h3 id="naoVigenteG2CopyTitle">NCMs Não Vigentes (Grupo 2) - (0)</h3>
+                        <div class="input-group">
+                            <textarea id="compareNaoVigenteG2Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 2."></textarea>
+                            <button id="copyCompareNaoVigenteG2Btn" class="danger">Copiar</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -710,40 +720,7 @@
                 </div>
             </div>
             
-            <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG1Box">
-                <h3 id="naoVigenteG1CopyTitle">NCMs Não Vigentes (Grupo 1) - (0)</h3>
-                <div class="input-group">
-                    <textarea id="compareNaoVigenteG1Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 1."></textarea>
-                    <button id="copyCompareNaoVigenteG1Btn" class="danger">Copiar</button>
-                </div>
             </div>
-            
-            <div class="summary-copy-box nao-vigente hidden" id="compareNaoVigenteG2Box">
-                <h3 id="naoVigenteG2CopyTitle">NCMs Não Vigentes (Grupo 2) - (0)</h3>
-                <div class="input-group">
-                    <textarea id="compareNaoVigenteG2Text" readonly title="Lista de NCMs não vigentes ou inválidas encontradas no Grupo 2."></textarea>
-                    <button id="copyCompareNaoVigenteG2Btn" class="danger">Copiar</button>
-                </div>
-            </div>
-            
-            <div class="results-container comparador">
-                <div class="card result-card comum hidden" id="compareResultComum">
-                    <h3><span>Em Comum - (<span id="comumCount">0</span>)</span></h3>
-                    <div id="comumList" class="result-list"></div>
-                </div>
-
-                <div class="card result-card exclusivo hidden" id="compareResultGrupo1">
-                    <h3><span>Apenas no Grupo 1 - (<span id="exclusivoG1Count">0</span>)</span></h3>
-                    <div id="exclusivoG1List" class="result-list"></div>
-                </div>
-                
-                <div class="card result-card exclusivo hidden" id="compareResultGrupo2">
-                    <h3><span>Apenas no Grupo 2 - (<span id="exclusivoG2Count">0</span>)</span></h3>
-                    <div id="exclusivoG2List" class="result-list"></div>
-                </div>
-            </div>
-            
-        </div>
         </div> <div class="page-footer">
         <a href="#" id="updateLink" title="Acesso do Administrador">Atualizar Base de Dados</a>
         <p id="copyrightInfo">&copy; 2025. Design by <span class="overline-md">MD</span>.</p>
@@ -851,20 +828,7 @@
         const compareBtn = document.getElementById('compareBtn');
         const clearCompareBtn = document.getElementById('clearCompareBtn');
         
-        // Resultados Visuais (Cards Coloridos)
-        const compareResultComum = document.getElementById('compareResultComum');
-        const comumCount = document.getElementById('comumCount');
-        const comumList = document.getElementById('comumList'); 
-        
-        const compareResultGrupo1 = document.getElementById('compareResultGrupo1');
-        const exclusivoG1Count = document.getElementById('exclusivoG1Count');
-        const exclusivoG1List = document.getElementById('exclusivoG1List'); 
-        
-        const compareResultGrupo2 = document.getElementById('compareResultGrupo2');
-        const exclusivoG2Count = document.getElementById('exclusivoG2Count');
-        const exclusivoG2List = document.getElementById('exclusivoG2List'); 
-        
-        // Caixas de Cópia (Texto Limpo)
+        // Caixas de Cópia (Resultados)
         const comumCopyBox = document.getElementById('comumCopyBox');
         const comumListText = document.getElementById('comumListText');
         const copyComumBtn = document.getElementById('copyComumBtn');
@@ -1370,6 +1334,9 @@
          */
         function displayCompareResults(comum, g1, g2, naoVigentesG1, naoVigentesG2) {
             
+            // Função helper para criar o texto LIMPO (para cópia)
+            const formatCompareText = (item) => formatNCM(item);
+            
             // Ordena as listas
             comum.sort();
             g1.sort();
@@ -1380,7 +1347,7 @@
             // Popula Em Comum
             comumCopyTitle.textContent = getPluralText(comum.length, "NCM comum aos dois Grupos", "NCMs comuns aos dois Grupos");
             if (comum.length > 0) {
-                comumListText.value = comum.map(formatNCM).join(', '); 
+                comumListText.value = comum.map(formatCompareText).join(', '); 
                 comumCopyBox.classList.remove('hidden');
             } else {
                 comumListText.value = '';
@@ -1390,7 +1357,7 @@
             // Popula Apenas no Grupo 1
             exclusivoG1CopyTitle.textContent = getPluralText(g1.length, "NCM vigente contida apenas no Grupo 1", "NCMs vigentes contidas apenas no Grupo 1");
             if (g1.length > 0) {
-                exclusivoG1ListText.value = g1.map(formatNCM).join(', ');
+                exclusivoG1ListText.value = g1.map(formatCompareText).join(', ');
                 exclusivoG1CopyBox.classList.remove('hidden');
             } else {
                 exclusivoG1ListText.value = '';
@@ -1400,7 +1367,7 @@
             // Popula Apenas no Grupo 2
             exclusivoG2CopyTitle.textContent = getPluralText(g2.length, "NCM vigente contida apenas no Grupo 2", "NCMs vigentes contidas apenas no Grupo 2");
             if (g2.length > 0) {
-                exclusivoG2ListText.value = g2.map(formatNCM).join(', ');
+                exclusivoG2ListText.value = g2.map(formatCompareText).join(', ');
                 exclusivoG2CopyBox.classList.remove('hidden');
             } else {
                 exclusivoG2ListText.value = '';
