@@ -377,11 +377,16 @@
             }
         }
         
+        @media (min-width: 1200px) {
+            .results-container.verificador {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        
         .result-card.nao-vigente {
             background-color: var(--color-error);
             border-color: var(--color-error-border);
         }
-        /* NOVO: Estilo Card Expirado (Laranja/Amarelo) */
         .result-card.expirado {
             background-color: var(--color-warning);
             border-color: var(--color-warning-border);
@@ -439,14 +444,12 @@
             line-height: 1.3;
         }
         
-        /* NOVO: Estilo para NCM não vigente (expirada ou inválida) */
         .result-item .ncm-nao-vigente {
             font-size: 0.8rem;
             color: var(--color-error-dark);
             font-weight: bold;
             margin-top: 2px;
         }
-        /* NOVO: Estilo para NCM expirada */
          .result-item .ncm-expirada {
             font-size: 0.8rem;
             color: var(--color-warning-dark);
@@ -455,10 +458,7 @@
         }
         
         
-        /* ========================================================== */
         /* ESTILOS DA ABA "LIVRO DA NCMs" */
-        /* ========================================================== */
-        
         #ncmTree {
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
@@ -488,9 +488,8 @@
             background-color: var(--color-bg);
         }
         
-        /* Triângulo (expansor) */
         .tree-node .node-label::before {
-            content: '►'; /* Fechado */
+            content: '►'; 
             display: inline-block;
             width: 1em;
             margin-left: -1em;
@@ -500,10 +499,9 @@
         }
         
         .tree-node.expanded > .node-label::before {
-            content: '▼'; /* Aberto */
+            transform: rotate(90deg); 
         }
         
-        /* Esconde sub-lista por padrão */
         .tree-node .sub-tree {
             display: none;
         }
@@ -518,7 +516,7 @@
             font-size: 1.1rem;
             color: var(--color-primary-dark);
             margin-top: 1rem;
-            font-family: var(--font-family); /* Fonte normal para Seções */
+            font-family: var(--font-family); 
         }
         
         /* Nível 1 (Capítulo) */
@@ -546,7 +544,6 @@
         .tree-node.level-5 {
             color: #333;
         }
-        /* Nível 5 não tem expansor */
         .tree-node.level-5 > .node-label {
             cursor: default;
         }
@@ -770,12 +767,11 @@
             </div>
 
             <div class="copy-box hidden" id="naoVigenteCopyBox">
-                <textarea id="naoVigenteListText" readonly title="Lista de NCMs não vigentes (expiradas ou inválidas)."></textarea>
+                <textarea id="naoVigenteListText" readonly title="Lista de NCMs expiradas ou inválidas."></textarea>
                 <button id="copyNaoVigenteListBtn" class="danger">Copiar Não Vigentes</button>
             </div>
 
-
-            <div class="results-container">
+            <div class="results-container verificador">
                 <div class="card result-card vigente hidden" id="vigenteCard">
                     <h3><span>Vigentes - (<span id="vigenteCount">0</span>)</span></h3>
                     <div id="vigenteList" class="result-list">
@@ -900,16 +896,16 @@
         <h2>Instruções para Atualizar a Base NCM</h2>
         
         <h3>Passo 1: Baixar o novo CSV</h3>
-        <p>Acesse o portal oficial do governo e baixe o arquivo de NCMs **Vigentes** mais recente.</p>
-        <a href="https.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias/download-ncm-nomenclatura-comum-do-mercosul" target="_blank" rel="noopener noreferrer">
+        <p>Acesse o portal oficial do governo e baixe o arquivo de NCMs **Vigentes** mais recente (geralmente em formato .xlsx).</p>
+        <a href="https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias/download-ncm-nomenclatura-comum-do-mercosul" target="_blank" rel="noopener noreferrer">
             Página de Download de NCMs (Receita Federal)
         </a>
-        <p>Procure pelo link de download do arquivo (geralmente .xlsx) e abra-o no Excel ou similar.</p>
+        <p>Procure pelo link de download do arquivo **"Tabela NCM Vigente"**.</p>
 
         <h3>Passo 2: Salvar como CSV e Fazer Upload</h3>
         <p>Você deve salvar esse arquivo no formato CSV correto e enviá-lo para o repositório.</p>
         <ol>
-            <li>No Excel, clique em "Salvar Como".</li>
+            <li>No Excel (ou similar), clique em "Salvar Como".</li>
             <li>Em "Tipo de arquivo", escolha: <strong>CSV (Separado por vírgulas) (*.csv)</strong>.</li>
             <li>No nome do arquivo, digite **exatamente**:
                 <br>
@@ -931,13 +927,22 @@
     <script>
         // Objeto global para armazenar os dados da NCM
         let ncmDatabase = {};
-        // NOVO: Objeto para a árvore hierárquica
+        // Objeto para a árvore hierárquica
         let ncmTree = {};
         
-        let lastVigentes = [];
-        let lastNaoVigentes = []; // Esta lista agora conterá Expiradas + Inválidas
+        // Nomes das colunas (para lidar com codificação estranha)
+        // Vamos usar os nomes exatos do CSV (com acentos)
+        let colCodigo = 'Código';
+        let colDesc = 'Descrição';
+        let colDataFim = 'Data Fim';
+        let colAtoTipo = 'Tipo_Ato_Fim'; // Esta coluna não existe no CSV Vigente
+        let colAtoNum = 'Número'; // Esta é do Ato de Início
+        let colAtoAno = 'Ano'; // Esta é do Ato de Início
 
-        // ARQUIVO-FONTE ÚNICO (CSV)
+        
+        let lastVigentes = [];
+        let lastNaoVigentes = []; // Expiradas + Inválidas
+
         const CSV_FILE = 'Tabela_NCM_Vigente.csv';
 
         // --- Seleção de Elementos DOM ---
@@ -950,11 +955,11 @@
         // --- ABAS (TABS) ---
         const tabBtnVerificador = document.getElementById('tabBtnVerificador');
         const tabBtnComparador = document.getElementById('tabBtnComparador');
-        const tabBtnLivro = document.getElementById('tabBtnLivro'); // Nova Aba
+        const tabBtnLivro = document.getElementById('tabBtnLivro'); 
         const abaVerificador = document.getElementById('aba-verificador');
         const abaComparador = document.getElementById('aba-comparador');
-        const abaLivro = document.getElementById('aba-livro'); // Nova Aba
-        const ncmTreeContainer = document.getElementById('ncmTree'); // Container da Árvore
+        const abaLivro = document.getElementById('aba-livro'); 
+        const ncmTreeContainer = document.getElementById('ncmTree'); 
 
         // --- ABA 1: VERIFICADOR ---
         const ncmInput = document.getElementById('ncmInput');
@@ -1088,7 +1093,7 @@
         // --- LÓGICA DAS ABAS ---
         tabBtnVerificador.addEventListener('click', () => switchTab('verificador'));
         tabBtnComparador.addEventListener('click', () => switchTab('comparador'));
-        tabBtnLivro.addEventListener('click', () => switchTab('livro')); // Nova Aba
+        tabBtnLivro.addEventListener('click', () => switchTab('livro')); 
 
         function switchTab(tabName) {
             abaVerificador.classList.add('hidden');
@@ -1153,43 +1158,63 @@
                     if (!response.ok) {
                         throw new Error(`Erro HTTP! Status: ${response.status}. Não foi possível encontrar o arquivo ${CSV_FILE}.`);
                     }
-                    return response.text();
+                    // Usa 'latin1' (ou 'iso-8859-1') que é comum em CSVs do governo brasileiro
+                    return response.arrayBuffer().then(buffer => {
+                        const decoder = new TextDecoder('iso-8859-1'); 
+                        return decoder.decode(buffer);
+                    });
                 })
                 .then(csvText => {
                     
                     const newDatabase = {};
                     const newTree = {};
                     let vigentesCount = 0; 
+                    let dataDeAtualizacao = "";
                     
-                    // 1. Processar o CSV
                     const lines = csvText.split(/\r\n|\n/);
-                    if (lines.length < 2) throw new Error("Arquivo CSV vazio ou inválido.");
+                    if (lines.length < 5) throw new Error("Arquivo CSV vazio ou em formato inesperado.");
+                    
+                    // Extrai a data de atualização da linha 1 (Índice 0)
+                    const dataAtualizacaoMatch = lines[1].match(/(\d{2}\/\d{2}\/\d{4})/);
+                    if (dataAtualizacaoMatch) {
+                        dataDeAtualizacao = dataAtualizacaoMatch[1];
+                    }
 
-                    // Detecta o separador (vírgula ou ponto e vírgula)
-                    const header = lines[0];
+                    // Encontra o cabeçalho
+                    let headerLineIndex = -1;
+                    for(let i = 0; i < 10; i++) { // Procura nos 10 primeiros
+                        if(lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
+                            headerLineIndex = i;
+                            break;
+                        }
+                    }
+                    if(headerLineIndex === -1) throw new Error("Cabeçalho (Codigo, Descricao) não encontrado no CSV.");
+
+                    const header = lines[headerLineIndex];
                     const separator = header.includes(';') ? ';' : ',';
                     
-                    // Encontra os índices das colunas
-                    const headers = header.split(separator).map(h => h.replace(/"/g, ''));
-                    const idxCodigo = headers.indexOf('Codigo');
-                    const idxDesc = headers.indexOf('Descricao');
-                    const idxDataFim = headers.indexOf('Data_Fim') !== -1 ? headers.indexOf('Data_Fim') : headers.indexOf('Data_Fim_Vigencia');
-                    const idxAtoTipo = headers.indexOf('Tipo_Ato_Fim');
-                    const idxAtoNum = headers.indexOf('Numero_Ato_Fim');
-                    const idxAtoAno = headers.indexOf('Ano_Ato_Fim');
-
+                    const headers = header.split(separator).map(h => h.replace(/"/g, '').trim());
+                    
+                    // Usa os nomes de coluna com acento que vimos
+                    const idxCodigo = headers.indexOf('Código');
+                    const idxDesc = headers.indexOf('Descrição');
+                    const idxDataFim = headers.indexOf('Data Fim');
+                    // Não temos colunas de Ato de Fim neste arquivo
+                    
                     if (idxCodigo === -1 || idxDesc === -1 || idxDataFim === -1) {
-                        throw new Error(`Cabeçalhos esperados (Codigo, Descricao, Data_Fim) não encontrados no CSV.`);
+                        throw new Error(`Cabeçalhos (Código, Descrição, Data Fim) não encontrados. Encontrados: ${headers.join(', ')}`);
                     }
 
                     // Loop principal para processar o CSV
-                    for (let i = 1; i < lines.length; i++) {
+                    for (let i = headerLineIndex + 1; i < lines.length; i++) {
                         if (!lines[i]) continue;
                         
-                        // Lógica de parsing de CSV simples (não trata aspas dentro de campos)
                         const values = lines[i].split(separator).map(v => v.replace(/"/g, ''));
                         
-                        const code = values[idxCodigo].replace(/\D/g, ''); // Limpa código (ex: 0101.21.00 -> 01012100)
+                        if (values.length < headers.length) continue; // Linha mal formada
+                        
+                        const codeRaw = values[idxCodigo];
+                        const code = codeRaw.replace(/\D/g, ''); 
                         const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
                         
                         // 2. Alimenta o ncmDatabase (para Abas 1 e 2)
@@ -1202,14 +1227,8 @@
                                 status = 'vigente';
                                 vigentesCount++;
                             } else {
-                                const ato = values[idxAtoTipo] || '';
-                                const num = values[idxAtoNum] || '';
-                                const ano = values[idxAtoAno] || '';
-                                
-                                let atoInfo = `${ato} ${num} de ${ano}`.replace('  ', ' ').trim();
-                                if (atoInfo.startsWith('de ')) atoInfo = ''; 
-                                if (atoInfo === 'de') atoInfo = '';
-                                endInfo = `Fim: ${dataFim}${atoInfo ? ` (${atoInfo})` : ''}`;
+                                // Não temos os dados do Ato neste arquivo
+                                endInfo = `Fim: ${dataFim}`;
                             }
                             
                             ncmDatabase[code] = { 
@@ -1220,7 +1239,8 @@
                         }
                         
                         // 3. Alimenta a ncmTree (para Aba 3)
-                        buildTree(newTree, code, desc);
+                        // Precisamos do código "raw" (com pontos) para a árvore
+                        buildTree(newTree, codeRaw, desc);
                     }
                     
                     ncmDatabase = newDatabase; 
@@ -1234,7 +1254,18 @@
                     renderNCMTree(ncmTree, ncmTreeContainer);
 
                     // 5. Atualiza a UI
-                    dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
+                    if(dataDeAtualizacao) {
+                         const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                        if (dateMatch) {
+                            const [_, day, month, year] = dateMatch;
+                            dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
+                        } else {
+                             dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
+                        }
+                    } else {
+                        dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
+                    }
+                    
                     if (databaseStatsInfo) {
                         databaseStatsInfo.textContent = `Total de ${vigentesCount.toLocaleString('pt-BR')} NCMs vigentes na base.`;
                     }
@@ -1314,7 +1345,6 @@
             
             totalProcessedSpan.textContent = total;
             totalVigenteSpan.textContent = vigentes.length;
-            // "Não Vigentes" no resumo = Expiradas + Inválidas
             totalNaoVigenteSpan.textContent = expiradas.length + invalidas.length; 
 
             // Card VIGENTES
@@ -1646,40 +1676,42 @@
          * Constrói a árvore hierárquica a partir do código e descrição.
          */
         function buildTree(tree, code, desc) {
-            // Níveis: 01 (Cap), 0101 (Pos), 010121 (Sub1), 01012100 (Sub2/Item)
-            // O CSV tem códigos de 2, 4, 6, 7 e 8 dígitos.
+            // Níveis: 01 (Cap), 01.01 (Pos), 0101.21 (Sub1), 0101.21.00 (Sub2/Item)
+            
+            // Limpa o código para processamento (01.01 -> 0101)
+            const cleanCode = code.replace(/\D/g, ''); 
             
             // Ignora Seções (vamos adicionar manualmente) e códigos não-padrão
-            if (code.length < 2 || code.length > 8 || code.length === 3 || code.length === 5) {
+            if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
                 return;
             }
 
             // Pega os nós
-            const cap = code.substring(0, 2);
-            const pos = code.length >= 4 ? code.substring(0, 4) : null;
-            const sub1 = code.length >= 6 ? code.substring(0, 6) : null;
-            const item = code.length >= 7 ? code.substring(0, 7) : null;
-            const subitem = code.length === 8 ? code : null; // NCM final
+            const cap = cleanCode.substring(0, 2);
+            const pos = cleanCode.length >= 4 ? cleanCode.substring(0, 4) : null;
+            const sub1 = cleanCode.length >= 6 ? cleanCode.substring(0, 6) : null;
+            const item = cleanCode.length >= 7 ? cleanCode.substring(0, 7) : null;
+            const subitem = cleanCode.length === 8 ? cleanCode : null; // NCM final
 
             // Garante que o Capítulo exista
-            if (!tree[cap]) tree[cap] = { desc: (code.length === 2 ? desc : '...'), children: {} };
-            if (code.length === 2) tree[cap].desc = desc;
+            if (!tree[cap]) tree[cap] = { desc: (cleanCode.length === 2 ? desc : '...'), code: code, children: {} };
+            if (cleanCode.length === 2) tree[cap].desc = desc;
 
             // Posição
-            if (pos && !tree[cap].children[pos]) tree[cap].children[pos] = { desc: (code.length === 4 ? desc : '...'), children: {} };
-            if (code.length === 4) tree[cap].children[pos].desc = desc;
+            if (pos && !tree[cap].children[pos]) tree[cap].children[pos] = { desc: (cleanCode.length === 4 ? desc : '...'), code: code, children: {} };
+            if (cleanCode.length === 4) tree[cap].children[pos].desc = desc;
 
             // Subposição 1
-            if (sub1 && !tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: (code.length === 6 ? desc : '...'), children: {} };
-            if (code.length === 6) tree[cap].children[pos].children[sub1].desc = desc;
+            if (sub1 && !tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: (cleanCode.length === 6 ? desc : '...'), code: code, children: {} };
+            if (cleanCode.length === 6) tree[cap].children[pos].children[sub1].desc = desc;
             
             // Item
-            if (item && !tree[cap].children[pos].children[sub1].children[item]) tree[cap].children[pos].children[sub1].children[item] = { desc: (code.length === 7 ? desc : '...'), children: {} };
-            if (code.length === 7) tree[cap].children[pos].children[sub1].children[item].desc = desc;
+            if (item && !tree[cap].children[pos].children[sub1].children[item]) tree[cap].children[pos].children[sub1].children[item] = { desc: (cleanCode.length === 7 ? desc : '...'), code: code, children: {} };
+            if (cleanCode.length === 7) tree[cap].children[pos].children[sub1].children[item].desc = desc;
 
             // Subitem (NCM)
             if (subitem) {
-                tree[cap].children[pos].children[sub1].children[item].children[subitem] = { desc: desc, children: {} }; // Nível 5
+                tree[cap].children[pos].children[sub1].children[item].children[subitem] = { desc: desc, code: code, children: {} }; // Nível 5
             }
         }
         
@@ -1689,7 +1721,7 @@
         const secoesNCM = {
             "I": { "nome": "Seção I - ANIMAIS VIVOS E PRODUTOS DO REINO ANIMAL", "caps": ["01", "02", "03", "04", "05"] },
             "II": { "nome": "Seção II - PRODUTOS DO REINO VEGETAL", "caps": ["06", "07", "08", "09", "10", "11", "12", "13", "14"] },
-            "III": { "nome": "Seção III - GORDURAS E ÓLEOS...", "caps": ["15"] },
+            "III": { "nome": "Seção III - GORDURAS E ÓLEOS ANIMAIS, VEGETAIS...", "caps": ["15"] },
             "IV": { "nome": "Seção IV - PRODUTOS DAS INDÚSTRIAS ALIMENTARES...", "caps": ["16", "17", "18", "19", "20", "21", "22", "23", "24"] },
             "V": { "nome": "Seção V - PRODUTOS MINERAIS", "caps": ["25", "26", "27"] },
             "VI": { "nome": "Seção VI - PRODUTOS DAS INDÚSTRIAS QUÍMICAS...", "caps": ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38"] },
@@ -1714,19 +1746,16 @@
          * Renderiza a árvore NCM no container
          */
         function renderNCMTree(tree, container) {
-            container.innerHTML = ''; // Limpa
+            container.innerHTML = ''; 
             
-            // Itera sobre as Seções estáticas
             for (const secaoId in secoesNCM) {
                 const secao = secoesNCM[secaoId];
                 const secaoNode = createTreeNode(secao.nome, 0);
                 
-                // Itera sobre os Capítulos (da lista estática)
                 secao.caps.forEach(capId => {
                     const capData = tree[capId];
                     if (capData) {
-                        const capNode = createTreeNode(`${capId} - ${capData.desc}`, 1);
-                        // Constrói recursivamente o resto da árvore
+                        const capNode = createTreeNode(`${capData.code} - ${capData.desc}`, 1);
                         buildRecursiveTree(capData.children, capNode.querySelector('.sub-tree'), 2);
                         secaoNode.querySelector('.sub-tree').appendChild(capNode);
                     }
@@ -1735,24 +1764,17 @@
             }
         }
         
-        /**
-         * Constrói recursivamente os nós da árvore
-         */
         function buildRecursiveTree(children, parentElement, level) {
-            const keys = Object.keys(children).sort(); // Ordena os filhos
+            const keys = Object.keys(children).sort(); 
             
             keys.forEach(key => {
                 const data = children[key];
                 const hasChildren = Object.keys(data.children).length > 0;
                 
-                // Formata o código
-                let formattedCode = key;
-                if (level === 2) formattedCode = key.substring(0, 4); // Posição
-                if (level === 3) formattedCode = `${key.substring(0, 4)}.${key.substring(4, 6)}`; // Subposição 1
-                if (level === 4) formattedCode = `${key.substring(0, 4)}.${key.substring(4, 6)}.${key.substring(6, 7)}`; // Item
-                if (level === 5) formattedCode = formatNCM(key); // Subitem (NCM)
+                // Nível 5 é a folha (NCM 8 dígitos)
+                const isLeaf = level === 5; 
                 
-                const node = createTreeNode(`${formattedCode} - ${data.desc}`, level, !hasChildren);
+                const node = createTreeNode(`${data.code} - ${data.desc}`, level, isLeaf);
                 
                 if (hasChildren) {
                     buildRecursiveTree(data.children, node.querySelector('.sub-tree'), level + 1);
@@ -1761,9 +1783,6 @@
             });
         }
         
-        /**
-         * Cria um único nó (LI) para a árvore
-         */
         function createTreeNode(text, level, isLeaf = false) {
             const li = document.createElement('li');
             li.className = `tree-node level-${level}`;
