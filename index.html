@@ -726,7 +726,7 @@
         <nav class="tabs">
             <button id="tabBtnVerificador" class="tab-button active">Verificador</button>
             <button id="tabBtnComparador" class="tab-button">Comparador</button>
-            <button id="tabBtnLivro" class="tab-button">Livro da NCMs</button>
+            <button id="tabBtnLivro" class="tab-button">Livro de NCMs</button>
         </nav>
         
         <div id="aba-verificador" class="tab-content">
@@ -770,6 +770,7 @@
                 <textarea id="naoVigenteListText" readonly title="Lista de NCMs expiradas ou inválidas."></textarea>
                 <button id="copyNaoVigenteListBtn" class="danger">Copiar Não Vigentes</button>
             </div>
+
 
             <div class="results-container verificador">
                 <div class="card result-card vigente hidden" id="vigenteCard">
@@ -1138,152 +1139,156 @@
         /**
          * Carrega e PROCESSA o arquivo CSV da base de dados NCM.
          */
-        function loadData() {
+        async function loadData() {
             const cacheBuster = new Date().getTime(); // Cache buster por milissegundo
             const fileToFetch = `${CSV_FILE}?v=${cacheBuster}`;
 
+            let csvText;
+            let encodingUsed;
 
-            fetch(fileToFetch) 
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Erro HTTP! Status: ${response.status}. Não foi possível encontrar o arquivo ${CSV_FILE}.`);
+            try {
+                const response = await fetch(fileToFetch);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! Status: ${response.status}. Não foi possível encontrar o arquivo ${CSV_FILE}.`);
+                }
+                const buffer = await response.arrayBuffer();
+
+                // Tenta decodificar como UTF-8
+                try {
+                    const decoder = new TextDecoder('utf-8');
+                    csvText = decoder.decode(buffer);
+                    encodingUsed = 'UTF-8';
+                    // Testa se a decodificação funcionou procurando por um caractere-chave
+                    if (!csvText.includes("Descrição")) {
+                         throw new Error("Não é UTF-8 válido, tentando latin1.");
                     }
-                    return response.arrayBuffer(); 
-                })
-                .then(buffer => {
-                    
-                    // Função helper para checar os cabeçalhos
-                    const findHeaders = (text) => {
-                        const lines = text.split(/\r\n|\n/);
-                        let headerLineIndex = -1;
-                        for(let i = 0; i < 10; i++) { 
-                            // CORREÇÃO: Procurar pelos cabeçalhos com acento
-                            if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
-                                headerLineIndex = i;
-                                break;
-                            }
+                } catch (e) {
+                    // Se falhar, tenta latin1 (iso-8859-1)
+                    console.warn("Falha ao decodificar UTF-8, tentando iso-8859-1 (latin1)...");
+                    const decoder = new TextDecoder('iso-8859-1');
+                    csvText = decoder.decode(buffer);
+                    encodingUsed = 'iso-8859-1';
+                }
+
+                const newDatabase = {};
+                const newTree = {};
+                let vigentesCount = 0;
+                let dataDeAtualizacao = "";
+
+                const lines = csvText.split(/\r\n|\n/);
+                if (lines.length < 5) throw new Error("Arquivo CSV vazio ou em formato inesperado.");
+
+                // Extrai a data de atualização da linha 1 (Índice 0)
+                const dataAtualizacaoMatch = lines[1].match(/(\d{2}\/\d{2}\/\d{4})/);
+                if (dataAtualizacaoMatch) {
+                    dataDeAtualizacao = dataAtualizacaoMatch[1];
+                }
+
+                // Encontra o cabeçalho
+                let headerLineIndex = -1;
+                for (let i = 0; i < 10; i++) {
+                    if (lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
+                        headerLineIndex = i;
+                        break;
+                    }
+                }
+                
+                // Fallback para nomes sem acento se a codificação latin1 ainda estiver com problemas
+                if (headerLineIndex === -1) {
+                     for (let i = 0; i < 10; i++) {
+                        if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
+                            headerLineIndex = i;
+                            break;
                         }
-                        if(headerLineIndex === -1) return null;
-
-                        const header = lines[headerLineIndex];
-                        const separator = header.includes(';') ? ';' : ',';
-                        const headers = header.split(separator).map(h => h.replace(/"/g, '').trim());
-                        
-                        // Procura pelos nomes exatos (com acento)
-                        const idxCodigo = headers.indexOf('Código');
-                        const idxDesc = headers.indexOf('Descrição');
-                        const idxDataFim = headers.indexOf('Data Fim');
-                        
-                        if (idxCodigo === -1 || idxDesc === -1 || idxDataFim === -1) return null;
-                        
-                        return { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator };
-                    };
-
-                    // Tenta UTF-8
-                    let decoder = new TextDecoder('utf-8');
-                    let csvText = decoder.decode(buffer);
-                    let parsedHeaders = findHeaders(csvText);
-                    
-                    // Se falhar (caracteres quebrados), tenta latin1
-                    if (!parsedHeaders) {
-                        console.warn("Não foi possível encontrar cabeçalhos com UTF-8. Tentando com iso-8859-1 (latin1)...");
-                        decoder = new TextDecoder('iso-8859-1');
-                        csvText = decoder.decode(buffer);
-                        parsedHeaders = findHeaders(csvText);
                     }
+                }
 
-                    // Se falhar de novo, lança o erro
-                    if (!parsedHeaders) {
-                        throw new Error(`Cabeçalhos (Código, Descrição, Data Fim) não encontrados no CSV. Verifique o arquivo.`);
-                    }
-                    
-                    const { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator } = parsedHeaders;
+                if (headerLineIndex === -1) throw new Error("Cabeçalho (Código, Descrição) não encontrado no CSV.");
 
-                    const newDatabase = {};
-                    const newTree = {};
-                    let vigentesCount = 0; 
-                    let dataDeAtualizacao = "";
-                    
-                    const dataAtualizacaoMatch = lines[1].match(/(\d{2}\/\d{2}\/\d{4})/);
-                    if (dataAtualizacaoMatch) {
-                        dataDeAtualizacao = dataAtualizacaoMatch[1];
-                    }
+                const header = lines[headerLineIndex];
+                const separator = header.includes(';') ? ';' : ',';
+                const headers = header.split(separator).map(h => h.replace(/"/g, '').trim());
 
-                    // Loop principal para processar o CSV
-                    for (let i = headerLineIndex + 1; i < lines.length; i++) {
-                        if (!lines[i]) continue;
-                        
-                        const values = lines[i].split(separator).map(v => v.replace(/"/g, ''));
-                        
-                        if (values.length < headers.length) continue; 
-                        
-                        const codeRaw = values[idxCodigo];
-                        const code = codeRaw.replace(/\D/g, ''); 
-                        const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
-                        
-                        // 2. Alimenta o ncmDatabase (para Abas 1 e 2)
-                        if (code.length === 8) {
-                            const dataFim = values[idxDataFim];
-                            let status = 'expirado';
-                            let endInfo = '';
-                            
-                            if (!dataFim || dataFim.trim() === '31/12/9999') {
-                                status = 'vigente';
-                                vigentesCount++;
-                            } else {
-                                endInfo = `Fim: ${dataFim}`;
-                            }
-                            
-                            ncmDatabase[code] = { 
-                                desc: desc,
-                                status: status,
-                                endInfo: endInfo
-                            };
-                        }
-                        
-                        // 3. Alimenta a ncmTree (para Aba 3)
-                        buildTree(newTree, codeRaw, desc);
-                    }
-                    
-                    ncmDatabase = newDatabase; 
-                    ncmTree = newTree;
+                // Procura pelos nomes de coluna (com ou sem acento)
+                const idxCodigo = headers.findIndex(h => h.toLowerCase().startsWith('código') || h.toLowerCase().startsWith('codigo'));
+                const idxDesc = headers.findIndex(h => h.toLowerCase().startsWith('descrição') || h.toLowerCase().startsWith('descricao'));
+                const idxDataFim = headers.findIndex(h => h.toLowerCase().startsWith('data fim') || h.toLowerCase().startsWith('data_fim'));
 
-                    if (Object.keys(ncmDatabase).length === 0) {
-                        throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
-                    }
-                    
-                    // 4. Renderiza a Árvore (Aba 3)
-                    renderNCMTree(ncmTree, ncmTreeContainer);
+                if (idxCodigo === -1 || idxDesc === -1 || idxDataFim === -1) {
+                    throw new Error(`Cabeçalhos (Código, Descrição, Data Fim) não encontrados. Encontrados: ${headers.join(', ')}`);
+                }
 
-                    // 5. Atualiza a UI
-                    if(dataDeAtualizacao) {
-                         const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                        if (dateMatch) {
-                            const [_, day, month, year] = dateMatch;
-                            dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
+                // Loop principal para processar o CSV
+                for (let i = headerLineIndex + 1; i < lines.length; i++) {
+                    if (!lines[i]) continue;
+
+                    const values = lines[i].split(separator).map(v => v.replace(/"/g, ''));
+
+                    if (values.length < headers.length) continue;
+
+                    const codeRaw = values[idxCodigo];
+                    const code = codeRaw.replace(/\D/g, '');
+                    const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
+
+                    // 2. Alimenta o ncmDatabase (para Abas 1 e 2)
+                    if (code.length === 8) {
+                        const dataFim = values[idxDataFim];
+                        let status = 'expirado';
+                        let endInfo = '';
+
+                        if (!dataFim || dataFim.trim() === '31/12/9999') {
+                            status = 'vigente';
+                            vigentesCount++;
                         } else {
-                             dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
+                            endInfo = `Fim: ${dataFim}`;
                         }
-                    } else {
-                        dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
-                    }
-                    
-                    if (databaseStatsInfo) {
-                        databaseStatsInfo.textContent = `Total de ${vigentesCount.toLocaleString('pt-BR')} NCMs vigentes na base.`;
+
+                        ncmDatabase[code] = {
+                            desc: desc,
+                            status: status,
+                            endInfo: endInfo
+                        };
                     }
 
-                    showToast('Base de dados NCM (CSV) carregada e processada!', 'success');
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar o arquivo CSV:', error);
-                    dataSourceInfo.textContent = `Erro ao carregar ${CSV_FILE}. Verifique o console (F12).`;
-                    
-                    if(databaseStatsInfo) {
-                        databaseStatsInfo.classList.add('hidden');
+                    // 3. Alimenta a ncmTree (para Aba 3)
+                    buildTree(newTree, codeRaw, desc);
+                }
+
+                ncmDatabase = newDatabase;
+                ncmTree = newTree;
+
+                if (Object.keys(ncmDatabase).length === 0) {
+                    throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
+                }
+
+                // 4. Renderiza a Árvore (Aba 3)
+                renderNCMTree(ncmTree, ncmTreeContainer);
+
+                // 5. Atualiza a UI
+                if (dataDeAtualizacao) {
+                    const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (dateMatch) {
+                        const [_, day, month, year] = dateMatch;
+                        dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
+                    } else {
+                        dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
                     }
-                    
-                    showToast(`ERRO: ${error.message}. Verifique o console (F12).`, 'error');
-                });
+                } else {
+                    dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
+                }
+
+                if (databaseStatsInfo) {
+                    databaseStatsInfo.textContent = `Total de ${vigentesCount.toLocaleString('pt-BR')} NCMs vigentes na base.`;
+                }
+
+                showToast(`Base de dados NCM (CSV) carregada! (Codificação: ${encodingUsed})`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao carregar o arquivo CSV:', error);
+                dataSourceInfo.textContent = `Erro ao carregar ${CSV_FILE}. Verifique o console (F12).`;
+                if(databaseStatsInfo) databaseStatsInfo.classList.add('hidden');
+                showToast(`ERRO: ${error.message}. Verifique o console (F12).`, 'error');
+            }
         }
         
         
