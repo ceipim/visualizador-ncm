@@ -202,7 +202,6 @@
             color: var(--color-primary-dark); 
         }
         
-        /* GRADE DE INPUT DO COMPARADOR (2 Colunas) */
         .comparador-input-grid {
             display: grid;
             grid-template-columns: 1fr; 
@@ -230,7 +229,7 @@
             padding-bottom: 0.5rem;
         }
 
-        /* NOVA GRADE DE RESULTADOS DO COMPARADOR (2 Colunas) */
+        /* Grade de 2 Colunas para os Resultados */
         .comparador-results-grid {
             display: grid;
             grid-template-columns: 1fr; 
@@ -243,15 +242,25 @@
             }
         }
         
+        /* NOVO ESPAÇAMENTO: Adiciona espaço entre as caixas G1/G2 */
+        #exclusivoG1CopyBox, #exclusivoG2CopyBox {
+            margin-bottom: 0.75rem; /* Metade do padrão */
+        }
+        
 
         .summary-copy-box {
             background: var(--color-bg-light);
             border-radius: 12px;
             box-shadow: 0 6px 12px var(--color-shadow);
             padding: 1.5rem;
-            /* margin-bottom removido, pois a grade cuida do espaçamento */
             border: 1px solid var(--color-border);
+            /* margin-bottom é aplicado pela classe ou pela grade */
         }
+        /* Aplica margem padrão apenas na caixa "Comum" */
+        #comumCopyBox {
+            margin-bottom: 1.5rem;
+        }
+        
         .summary-copy-box h3 {
             font-size: 1rem;
             margin-bottom: 0.75rem;
@@ -263,7 +272,7 @@
         .summary-copy-box .input-group {
             display: flex;
             gap: 0.75rem;
-            align-items: center; /* CORRIGE ALTURA DO BOTÃO */
+            align-items: center; /* Alinha o botão com a textarea */
         }
          .summary-copy-box textarea {
             width: 100%;
@@ -275,6 +284,12 @@
             border-radius: 8px;
             resize: vertical;
          }
+        
+        /* NOVO: Estilo para placeholder de "Nenhum item" */
+        .summary-copy-box textarea::placeholder {
+            color: #999;
+            font-style: italic;
+        }
         
         #compareNaoVigenteG1Text, #compareNaoVigenteG2Text {
             height: 65px;
@@ -330,7 +345,7 @@
             border: 1px solid var(--color-border);
             display: flex;
             gap: 1rem;
-            align-items: center; /* CORRIGE ALTURA DO BOTÃO */
+            align-items: center; 
         }
 
         .copy-box textarea {
@@ -361,8 +376,6 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
-        
-        /* Removemos o layout de 3 colunas dos cards coloridos pois não existem mais */
         
         .result-card.nao-vigente {
             background-color: var(--color-error);
@@ -720,7 +733,7 @@
                 </div>
             </div>
             
-            </div>
+        </div>
         </div> <div class="page-footer">
         <a href="#" id="updateLink" title="Acesso do Administrador">Atualizar Base de Dados</a>
         <p id="copyrightInfo">&copy; 2025. Design by <span class="overline-md">MD</span>.</p>
@@ -1300,6 +1313,13 @@
             compareNaoVigenteG1Text.value = '';
             compareNaoVigenteG2Text.value = '';
             
+            // Limpa placeholders
+            comumListText.placeholder = '';
+            exclusivoG1ListText.placeholder = '';
+            exclusivoG2ListText.placeholder = '';
+            compareNaoVigenteG1Text.placeholder = '';
+            compareNaoVigenteG2Text.placeholder = '';
+            
             // Reseta títulos das caixas de cópia
             exclusivoG1CopyTitle.textContent = getPluralText(0, "NCM vigente contida apenas no Grupo 1", "NCMs vigentes contidas apenas no Grupo 1");
             exclusivoG2CopyTitle.textContent = getPluralText(0, "NCM vigente contida apenas no Grupo 2", "NCMs vigentes contidas apenas no Grupo 2");
@@ -1346,52 +1366,57 @@
 
             // Popula Em Comum
             comumCopyTitle.textContent = getPluralText(comum.length, "NCM comum aos dois Grupos", "NCMs comuns aos dois Grupos");
+            comumCopyBox.classList.remove('hidden'); // Sempre mostra
             if (comum.length > 0) {
                 comumListText.value = comum.map(formatCompareText).join(', '); 
-                comumCopyBox.classList.remove('hidden');
+                comumListText.placeholder = '';
             } else {
                 comumListText.value = '';
-                comumCopyBox.classList.add('hidden');
+                comumListText.placeholder = 'Nenhuma NCM em comum encontrada.';
             }
 
             // Popula Apenas no Grupo 1
             exclusivoG1CopyTitle.textContent = getPluralText(g1.length, "NCM vigente contida apenas no Grupo 1", "NCMs vigentes contidas apenas no Grupo 1");
+            exclusivoG1CopyBox.classList.remove('hidden'); // Sempre mostra
             if (g1.length > 0) {
                 exclusivoG1ListText.value = g1.map(formatCompareText).join(', ');
-                exclusivoG1CopyBox.classList.remove('hidden');
+                exclusivoG1ListText.placeholder = '';
             } else {
                 exclusivoG1ListText.value = '';
-                exclusivoG1CopyBox.classList.add('hidden');
+                exclusivoG1ListText.placeholder = 'Nenhuma NCM vigente exclusiva do Grupo 1.';
             }
 
             // Popula Apenas no Grupo 2
             exclusivoG2CopyTitle.textContent = getPluralText(g2.length, "NCM vigente contida apenas no Grupo 2", "NCMs vigentes contidas apenas no Grupo 2");
+            exclusivoG2CopyBox.classList.remove('hidden'); // Sempre mostra
             if (g2.length > 0) {
                 exclusivoG2ListText.value = g2.map(formatCompareText).join(', ');
-                exclusivoG2CopyBox.classList.remove('hidden');
+                exclusivoG2ListText.placeholder = '';
             } else {
                 exclusivoG2ListText.value = '';
-                exclusivoG2CopyBox.classList.add('hidden');
+                exclusivoG2ListText.placeholder = 'Nenhuma NCM vigente exclusiva do Grupo 2.';
             }
             
             // Popula Não Vigentes G1
             naoVigenteG1CopyTitle.textContent = getPluralText(naoVigentesG1.length, "NCM Não Vigente (Grupo 1)", "NCMs Não Vigentes (Grupo 1)");
+            compareNaoVigenteG1Box.classList.remove('hidden'); // Sempre mostra
             if (naoVigentesG1.length > 0) {
                 compareNaoVigenteG1Text.value = naoVigentesG1.map(formatNCM).join(', ');
-                compareNaoVigenteG1Box.classList.remove('hidden');
+                compareNaoVigenteG1Text.placeholder = '';
             } else {
                 compareNaoVigenteG1Text.value = '';
-                compareNaoVigenteG1Box.classList.add('hidden');
+                compareNaoVigenteG1Text.placeholder = 'Nenhuma NCM não vigente para o Grupo 1.';
             }
 
             // Popula Não Vigentes G2
             naoVigenteG2CopyTitle.textContent = getPluralText(naoVigentesG2.length, "NCM Não Vigente (Grupo 2)", "NCMs Não Vigentes (Grupo 2)");
+            compareNaoVigenteG2Box.classList.remove('hidden'); // Sempre mostra
             if (naoVigentesG2.length > 0) {
                 compareNaoVigenteG2Text.value = naoVigentesG2.map(formatNCM).join(', ');
-                compareNaoVigenteG2Box.classList.remove('hidden');
+                compareNaoVigenteG2Text.placeholder = '';
             } else {
                 compareNaoVigenteG2Text.value = '';
-                compareNaoVigenteG2Box.classList.add('hidden');
+                compareNaoVigenteG2Text.placeholder = 'Nenhuma NCM não vigente para o Grupo 2.';
             }
         }
         
