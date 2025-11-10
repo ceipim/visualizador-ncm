@@ -1139,10 +1139,7 @@
          * Carrega e PROCESSA o arquivo CSV da base de dados NCM.
          */
         function loadData() {
-            // ==========================================================
-            // CORREÇÃO DO CACHE: Usa milissegundos para forçar a atualização
-            // ==========================================================
-            const cacheBuster = new Date().getTime();
+            const cacheBuster = new Date().getTime(); // Cache buster por milissegundo
             const fileToFetch = `${CSV_FILE}?v=${cacheBuster}`;
 
 
@@ -1151,19 +1148,17 @@
                     if (!response.ok) {
                         throw new Error(`Erro HTTP! Status: ${response.status}. Não foi possível encontrar o arquivo ${CSV_FILE}.`);
                     }
-                    return response.arrayBuffer(); // Passa o buffer adiante
+                    return response.arrayBuffer(); 
                 })
                 .then(buffer => {
-                    // ==========================================================
-                    // CORREÇÃO DE ENCODING: Tenta UTF-8, depois latin1
-                    // ==========================================================
                     
                     // Função helper para checar os cabeçalhos
                     const findHeaders = (text) => {
                         const lines = text.split(/\r\n|\n/);
                         let headerLineIndex = -1;
-                        for(let i = 0; i < 10; i++) { // Procura nos 10 primeiros
-                            if(lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
+                        for(let i = 0; i < 10; i++) { 
+                            // CORREÇÃO: Procurar pelos cabeçalhos com acento
+                            if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
                                 headerLineIndex = i;
                                 break;
                             }
@@ -1174,14 +1169,13 @@
                         const separator = header.includes(';') ? ';' : ',';
                         const headers = header.split(separator).map(h => h.replace(/"/g, '').trim());
                         
-                        // Procura pelos nomes com e sem acento
-                        const idxCodigo = headers.findIndex(h => h.toLowerCase() === 'código' || h.toLowerCase() === 'codigo');
-                        const idxDesc = headers.findIndex(h => h.toLowerCase() === 'descrição' || h.toLowerCase() === 'descricao');
-                        const idxDataFim = headers.findIndex(h => h.toLowerCase() === 'data fim' || h.toLowerCase() === 'data_fim');
+                        // Procura pelos nomes exatos (com acento)
+                        const idxCodigo = headers.indexOf('Código');
+                        const idxDesc = headers.indexOf('Descrição');
+                        const idxDataFim = headers.indexOf('Data Fim');
                         
                         if (idxCodigo === -1 || idxDesc === -1 || idxDataFim === -1) return null;
                         
-                        // Retorna tudo o que precisamos
                         return { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator };
                     };
 
@@ -1203,10 +1197,6 @@
                         throw new Error(`Cabeçalhos (Código, Descrição, Data Fim) não encontrados no CSV. Verifique o arquivo.`);
                     }
                     
-                    // ==========================================================
-                    // FIM DAS CORREÇÕES
-                    // ==========================================================
-                    
                     const { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator } = parsedHeaders;
 
                     const newDatabase = {};
@@ -1214,7 +1204,6 @@
                     let vigentesCount = 0; 
                     let dataDeAtualizacao = "";
                     
-                    // Extrai a data de atualização da linha 1 (Índice 0)
                     const dataAtualizacaoMatch = lines[1].match(/(\d{2}\/\d{2}\/\d{4})/);
                     if (dataAtualizacaoMatch) {
                         dataDeAtualizacao = dataAtualizacaoMatch[1];
@@ -1242,7 +1231,6 @@
                                 status = 'vigente';
                                 vigentesCount++;
                             } else {
-                                // Como não temos colunas de Ato de Fim, usamos apenas a data
                                 endInfo = `Fim: ${dataFim}`;
                             }
                             
