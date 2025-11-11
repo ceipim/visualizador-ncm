@@ -475,7 +475,6 @@
             padding: 1.5rem;
             overflow-y: auto;
             border: 1px solid var(--color-border);
-            /* Altura removida */
         }
         
         /* Nível 0 (Seção) - Estático */
@@ -487,7 +486,6 @@
             margin-top: 1.2rem;
             font-family: var(--font-family); 
             line-height: 1.4;
-            /* Recuo suspenso */
             padding-left: 1.5em;
             text-indent: -1.5em;
         }
@@ -1202,12 +1200,14 @@
                     const lines = text.split(/\r\n|\n/);
                     let headerLineIndex = -1;
                     for(let i = 0; i < 10; i++) { 
+                        // CORREÇÃO: Procurar pelos cabeçalhos com acento
                         if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
                             headerLineIndex = i;
                             break;
                         }
                     }
                     
+                    // Fallback para nomes sem acento
                     if (headerLineIndex === -1) {
                          for (let i = 0; i < 10; i++) {
                             if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
@@ -1329,7 +1329,7 @@
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                // 4. Renderiza APENAS AS SEÇÕES
+                // 4. Renderiza APENAS AS SEÇÕES (Lazy Load)
                 renderNCMTreeSecoes(ncmTreeContainer);
 
                 // 5. Atualiza a UI
@@ -1712,7 +1712,7 @@
             naoVigenteG1CopyTitle.textContent = getPluralText(naoVigentesG1.length, "NCM Não Vigente (Grupo 1)", "NCMs Não Vigentes (Grupo 1)");
             compareNaoVigenteG1Box.classList.remove('hidden'); 
             if (naoVigentesG1.length > 0) {
-                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatCompareText).join(', ');
+                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatNCM).join(', ');
                 compareNaoVigenteG1Text.placeholder = '';
             } else {
                 compareNaoVigenteG1Text.value = '';
@@ -1723,7 +1723,7 @@
             naoVigenteG2CopyTitle.textContent = getPluralText(naoVigentesG2.length, "NCM Não Vigente (Grupo 2)", "NCMs Não Vigentes (Grupo 2)");
             compareNaoVigenteG2Box.classList.remove('hidden'); 
             if (naoVigentesG2.length > 0) {
-                compareNaoVigenteG2Text.value = naoVigentesG2.map(formatCompareText).join(', ');
+                compareNaoVigenteG2Text.value = naoVigentesG2.map(formatNCM).join(', ');
                 compareNaoVigenteG2Text.placeholder = '';
             } else {
                 compareNaoVigenteG2Text.value = '';
