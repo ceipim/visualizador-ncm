@@ -1167,7 +1167,7 @@
                         if (level === "0") { // Clicou na Seção
                             populateCapitulos(parentNode, secoesNCM[code].caps);
                         } else { // Clicou no Capítulo ou Nível > 1
-                            populateChildren(parentNode);
+                            populateChildren(parentNode, code);
                         }
                         parentNode.dataset.populated = "true";
                     }
@@ -1260,6 +1260,7 @@
                     dataDeAtualizacao = dataAtualizacaoMatch[1];
                 }
                 
+                // PARSER DE CSV ROBUSTO
                 const parseCsvLine = (line, sep) => {
                     const values = [];
                     let currentVal = '';
@@ -1333,6 +1334,7 @@
                     }
                 });
 
+                
                 ncmDatabase = newDatabase; 
                 ncmTreeMap = newTreeMap; // Armazena o mapa
 
@@ -1340,7 +1342,7 @@
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                // 4. Renderiza APENAS AS SEÇÕES
+                // 4. Renderiza APENAS AS SEÇÕES (Lazy Load)
                 renderNCMTreeSecoes(ncmTreeContainer);
 
                 // 5. Atualiza a UI
@@ -1760,72 +1762,71 @@
         // FUNÇÕES: ABA 3 (LIVRO DE NCMs)
         // ==========================================================
 
+        /**
+         * Encontra a chave do "pai" de um nó da árvore
+         */
         function findParentKey(codeRaw) {
-            if (!codeRaw.includes('.')) return null; // É um Capítulo
-            
+            // Se for um Capítulo (ex: "01"), não tem pai (na nossa árvore)
+            if (codeRaw.length === 2 && !codeRaw.includes('.')) return null;
+
             let parts = codeRaw.split('.');
             
-            // Caso: 0101.21.00 -> 0101.21.0
+            // Se tiver 4 partes (ex: 0104.10.1.1), o pai é 0104.10.1
             if (parts.length === 4) return parts.slice(0, 3).join('.');
-            // Caso: 0104.10.1 -> 0104.10
+            
+            // Se tiver 3 partes (ex: 0104.10.1), o pai é 0104.10
             if (parts.length === 3) return parts.slice(0, 2).join('.');
             
-            // Caso: 0101.2 ou 0104.10 (Nível de Subposição)
+            // Se tiver 2 partes (ex: 01.04 ou 0104.10)
             if (parts.length === 2) {
-                // Caso: 01.04 -> 01
-                if (codeRaw.length === 5) return parts[0]; 
-                // Caso: 0104.10 -> 01.04
-                if (codeRaw.length === 7) return "01.04"; // <- ISSO ESTÁ ERRADO, o pai de 0104.10 é 01.04
+                // Se for Posição (ex: "01.04"), o pai é o Capítulo ("01")
+                if (codeRaw.length === 5) return parts[0];
                 
-                // A lógica precisa ser baseada no que existe no MAPA
-                // Vamos voltar para a lógica de `cleanCode` que é mais confiável
+                // Se for Subposição (ex: "0104.10"), o pai é a Posição ("01.04")
+                if (codeRaw.length === 7) return `${parts[0].substring(0, 2)}.${parts[0].substring(2, 4)}`;
+                
+                // Se for Subposição (ex: "0101.2"), o pai é a Posição ("01.01")
+                if (codeRaw.length === 6) return `${parts[0].substring(0, 2)}.${parts[0].substring(2, 4)}`;
             }
-            return null; // Fallback
+            
+            // Se for Subposição (ex: 0101.21), o pai é 0101.2
+            if (codeRaw.length === 7 && parts.length === 2) {
+                 return `${parts[0]}.${parts[1].substring(0, 1)}`;
+            }
+            
+            return null; // Nível 1 (Capítulo)
         }
 
-
+        /**
+         * Constrói o mapa da árvore
+         */
         function buildTree(treeMap, codeRaw, desc) {
-            // Usa o codeRaw (com pontos) como a CHAVE
             if (!codeRaw || !desc) return;
             
+            // Adiciona o nó ao mapa
             if (!treeMap.has(codeRaw)) {
                 treeMap.set(codeRaw, { desc: desc, code: codeRaw, children: [] });
             } else {
+                // Atualiza a descrição caso a linha atual seja mais específica
+                // (Evita que "01" tenha a descrição "...")
                 treeMap.get(codeRaw).desc = desc;
             }
         }
         
-        // Conecta a árvore DEPOIS que o mapa está todo populado
+        /**
+         * Conecta os nós da árvore (Passo 2 do loadData)
+         */
         function linkTree(treeMap) {
             treeMap.forEach((node, codeRaw) => {
-                let parentKey = null;
-                const cleanCode = codeRaw.replace(/\D/g, '');
-
-                // Tenta encontrar o pai baseado na estrutura
-                if (cleanCode.length === 8) parentKey = cleanCode.substring(0, 7);
-                else if (cleanCode.length === 7) parentKey = cleanCode.substring(0, 6);
-                else if (cleanCode.length === 6) parentKey = cleanCode.substring(0, 5);
-                else if (cleanCode.length === 5) parentKey = cleanCode.substring(0, 4);
-                else if (cleanCode.length === 4) parentKey = cleanCode.substring(0, 2);
-                
-                // Tenta encontrar o pai no mapa
-                let parentNode = treeMap.get(parentKey); // Tenta 0101.21.0
-                
-                // Fallback para códigos inconsistentes (ex: 0104.10 é filho de 01.04)
-                if (!parentNode && cleanCode.length === 6) { // ex: 010410
-                     parentKey = cleanCode.substring(0, 4); // Tenta 0104
-                     parentNode = treeMap.get(parentKey); 
-                     
-                     // Fallback para código com ponto (ex: 01.04)
-                     if (!parentNode) parentNode = treeMap.get(`${parentKey.substring(0,2)}.${parentKey.substring(2,4)}`);
-                }
-                
-                if (parentNode) {
-                    parentNode.children.push(node);
+                const parentKey = findParentKey(codeRaw);
+                if (parentKey) {
+                    const parentNode = treeMap.get(parentKey);
+                    if (parentNode) {
+                        parentNode.children.push(node);
+                    }
                 }
             });
         }
-
         
         const secoesNCM = {
             "I": { "nome": "Seção I - ANIMAIS VIVOS E PRODUTOS DO REINO ANIMAL", "caps": ["01", "02", "03", "04", "05"] },
@@ -1883,7 +1884,7 @@
         }
         
         // Popula os filhos de qualquer nó (Capítulo, Posição, etc.)
-        function populateChildren(parentNode, level, code) {
+        function populateChildren(parentNode, code) {
             const subTreeContainer = parentNode.querySelector('.sub-tree');
             if (!subTreeContainer) return;
 
@@ -1891,7 +1892,7 @@
             if (!nodeData || !nodeData.children) return;
 
             const childrenData = nodeData.children;
-            const nextLevel = parseInt(level) + 1;
+            const nextLevel = 2; // Nível não importa mais, apenas a hierarquia
             
             childrenData.sort((a,b) => a.code.localeCompare(b.code)); // Ordena os filhos pelo código
             
@@ -1927,8 +1928,9 @@
             label.className = 'node-label';
             label.textContent = text;
             
-            // Nível 6 = Subitem (NCM de 8 dígitos)
-            if (level === 6 && text.includes('(Expirada)')) {
+            // Adiciona cor de expirada para NCMs de 8 dígitos
+            const cleanCode = text.replace(/\D/g, '');
+            if (cleanCode.length === 8 && text.includes('(Expirada)')) {
                 label.style.color = "var(--color-warning-dark)"; 
             }
             
