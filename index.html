@@ -1200,14 +1200,12 @@
                     const lines = text.split(/\r\n|\n/);
                     let headerLineIndex = -1;
                     for(let i = 0; i < 10; i++) { 
-                        // CORREÇÃO: Procurar pelos cabeçalhos com acento
                         if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
                             headerLineIndex = i;
                             break;
                         }
                     }
                     
-                    // Fallback para nomes sem acento
                     if (headerLineIndex === -1) {
                          for (let i = 0; i < 10; i++) {
                             if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
@@ -1329,7 +1327,7 @@
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                // 4. Renderiza APENAS AS SEÇÕES (Lazy Load)
+                // 4. Renderiza APENAS AS SEÇÕES
                 renderNCMTreeSecoes(ncmTreeContainer);
 
                 // 5. Atualiza a UI
@@ -1339,7 +1337,7 @@
                         const [_, day, month, year] = dateMatch;
                         dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
                     } else {
-                         dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
+                         dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizlvaçao})`;
                     }
                 } else {
                     dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
@@ -1712,7 +1710,7 @@
             naoVigenteG1CopyTitle.textContent = getPluralText(naoVigentesG1.length, "NCM Não Vigente (Grupo 1)", "NCMs Não Vigentes (Grupo 1)");
             compareNaoVigenteG1Box.classList.remove('hidden'); 
             if (naoVigentesG1.length > 0) {
-                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatNCM).join(', ');
+                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatCompareText).join(', ');
                 compareNaoVigenteG1Text.placeholder = '';
             } else {
                 compareNaoVigenteG1Text.value = '';
@@ -1750,69 +1748,30 @@
         // ==========================================================
 
         function buildTree(tree, code, desc) {
+            // A Árvore agora é um mapa simples
+            // A chave é o CÓDIGO LIMPO (01, 0101, 01012, 010121, 0101210, 01012100)
+            // O valor é o objeto de dados { desc, codeRaw, children: [] }
+            // E o `children` é um array de CHAVES
+            
             const cleanCode = code.replace(/\D/g, ''); 
-            
-            if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
-                 if(cleanCode.length !== 5) return;
-            }
+            if (cleanCode.length < 2) return;
 
-            let codeKey = cleanCode;
+            let parentKey = '';
+            if (cleanCode.length === 4) parentKey = cleanCode.substring(0, 2); // 01
+            else if (cleanCode.length === 5) parentKey = cleanCode.substring(0, 4); // 0101
+            else if (cleanCode.length === 6) parentKey = cleanCode.substring(0, 5); // 01012
+            else if (cleanCode.length === 7) parentKey = cleanCode.substring(0, 6); // 010121
+            else if (cleanCode.length === 8) parentKey = cleanCode.substring(0, 7); // 0101210
             
-            // Nível 1: Capítulo (01)
-            if (cleanCode.length === 2) {
-                if (!tree[codeKey]) tree[codeKey] = { desc: desc, code: code, children: {} };
-                else tree[codeKey].desc = desc; 
-                return;
-            }
-
-            // Encontra o(s) pai(s)
-            const cap = cleanCode.substring(0, 2);
-            if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
+            // Adiciona o nó atual ao mapa
+            if (!tree[cleanCode]) tree[cleanCode] = { desc: desc, code: code, children: [] };
+            else tree[cleanCode].desc = desc; // Atualiza a descrição
             
-            // Nível 2: Posição (01.01 -> 0101)
-            if (cleanCode.length === 4) {
-                if (!tree[cap].children[codeKey]) tree[cap].children[codeKey] = { desc: desc, code: code, children: {} };
-                else tree[cap].children[codeKey].desc = desc;
-                return;
-            }
-            
-            const pos = cleanCode.substring(0, 4);
-            if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: code.substring(0, 4), children: {} };
-
-            // Nível 3: Subposição 1 (0101.2 -> 01012)
-            if (cleanCode.length === 5) { 
-                if (!tree[cap].children[pos].children[codeKey]) tree[cap].children[pos].children[codeKey] = { desc: desc, code: code, children: {} };
-                else tree[cap].children[pos].children[codeKey].desc = desc;
-                return;
-            }
-
-            const sub1 = cleanCode.substring(0, 5);
-            if (!tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: '...', code: code.substring(0, 6), children: {} };
-            
-            // Nível 4: Subposição 2 (0101.21 -> 010121)
-            if (cleanCode.length === 6) {
-                if (!tree[cap].children[pos].children[sub1].children[codeKey]) tree[cap].children[pos].children[sub1].children[codeKey] = { desc: desc, code: code, children: {} };
-                else tree[cap].children[pos].children[sub1].children[codeKey].desc = desc;
-                return;
-            }
-
-            const sub2 = cleanCode.substring(0, 6);
-            if (!tree[cap].children[pos].children[sub1].children[sub2]) tree[cap].children[pos].children[sub1].children[sub2] = { desc: '...', code: code.substring(0, 7), children: {} };
-            
-            // Nível 5: Item (0101.21.0 -> 0101210)
-            if (cleanCode.length === 7) {
-                if (!tree[cap].children[pos].children[sub1].children[sub2].children[codeKey]) tree[cap].children[pos].children[sub1].children[sub2].children[codeKey] = { desc: desc, code: code, children: {} };
-                else tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode].desc = desc;
-                return;
-            }
-
-            const item = cleanCode.substring(0, 7);
-            if (!tree[cap].children[pos].children[sub1].children[sub2].children[item]) tree[cap].children[pos].children[sub1].children[sub2].children[item] = { desc: '...', code: code.substring(0, 9), children: {} };
-            
-             // Nível 6: Subitem (0101.21.00 -> 01012100)
-            if (cleanCode.length === 8) {
-                if (!tree[cap].children[pos].children[sub1].children[sub2].children[item].children[codeKey]) tree[cap].children[pos].children[sub1].children[sub2].children[item].children[codeKey] = { desc: desc, code: code, children: {} };
-                else tree[cap].children[pos].children[sub1].children[sub2].children[item].children[codeKey].desc = desc;
+            // Adiciona este nó ao array de 'children' do seu pai
+            if (parentKey && tree[parentKey]) {
+                if (!tree[parentKey].children.includes(cleanCode)) {
+                    tree[parentKey].children.push(cleanCode);
+                }
             }
         }
         
@@ -1861,7 +1820,7 @@
             capIds.forEach(capId => {
                 const capData = ncmTree[capId];
                 if (capData) {
-                    const hasChildren = Object.keys(capData.children).length > 0;
+                    const hasChildren = capData.children.length > 0;
                     const capNode = createTreeNode(`Capítulo ${capData.code} - ${capData.desc}`, 1, !hasChildren);
                     if (hasChildren) {
                         capNode.dataset.id = `1-${capId}`; // Armazena o ID
@@ -1877,44 +1836,31 @@
             if (!subTreeContainer) return;
 
             let childrenData;
-            const cleanCode = code.replace(/\D/g, '');
-            
             try {
-                 if (level === "1") { // Clicou no Capítulo
-                    childrenData = ncmTree[cleanCode].children;
-                } else if (level === "2") { // Clicou na Posição
-                    childrenData = ncmTree[cleanCode.substring(0, 2)].children[cleanCode].children;
-                } else if (level === "3") { // Clicou na Subposição 1
-                    childrenData = ncmTree[cleanCode.substring(0, 2)].children[cleanCode.substring(0, 4)].children[cleanCode].children;
-                } else if (level === "4") { // Clicou na Subposição 2
-                    childrenData = ncmTree[cleanCode.substring(0, 2)].children[cleanCode.substring(0, 4)].children[cleanCode.substring(0, 5)].children[cleanCode].children;
-                } else if (level === "5") { // Clicou no Item
-                    childrenData = ncmTree[cleanCode.substring(0, 2)].children[cleanCode.substring(0, 4)].children[cleanCode.substring(0, 5)].children[cleanCode.substring(0, 6)].children[cleanCode].children;
-                } else {
-                    return; // Nível 6 (folha) não tem filhos
-                }
+                childrenData = ncmTree[code].children; // Pega os filhos diretos
             } catch(e) {
                 console.warn(`Erro ao buscar filhos para ${code}`, e);
                 return; 
             }
 
-            const keys = Object.keys(childrenData).sort(); 
+            const keys = childrenData.sort(); 
             const nextLevel = parseInt(level) + 1;
             
             keys.forEach(key => {
-                const data = childrenData[key];
-                const hasChildren = Object.keys(data.children).length > 0;
+                const data = ncmTree[key]; // Pega os dados do filho do mapa principal
+                if(!data) return; 
                 
-                const isLeaf = (nextLevel === 6 || !hasChildren); 
+                const hasChildren = data.children.length > 0;
+                const isLeaf = !hasChildren;
                 
                 let ncmData = null;
-                if (nextLevel === 6) { 
+                if (key.length === 8) { // É uma NCM de 8 dígitos
                     ncmData = ncmDatabase[key];
                 }
                 
                 let labelText = `${data.code} - ${data.desc}`;
                 
-                if (nextLevel === 6 && ncmData && ncmData.status === 'expirado') {
+                if (ncmData && ncmData.status === 'expirado') {
                     labelText += ` (Expirada)`;
                 }
                 
@@ -1934,7 +1880,8 @@
             label.className = 'node-label';
             label.textContent = text;
             
-            if (level === 6 && text.includes('(Expirada)')) {
+            // Adiciona cor de expirada para NCMs de 8 dígitos
+            if (level >= 5 && text.includes('(Expirada)')) {
                 label.style.color = "var(--color-warning-dark)"; 
             }
             
