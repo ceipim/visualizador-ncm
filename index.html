@@ -475,6 +475,7 @@
             padding: 1.5rem;
             overflow-y: auto;
             border: 1px solid var(--color-border);
+            /* Altura removida */
         }
         
         /* Nível 0 (Seção) - Estático */
@@ -486,6 +487,7 @@
             margin-top: 1.2rem;
             font-family: var(--font-family); 
             line-height: 1.4;
+            /* Recuo suspenso */
             padding-left: 1.5em;
             text-indent: -1.5em;
         }
@@ -1128,13 +1130,13 @@
                 abaLivro.classList.remove('hidden');
                 tabBtnLivro.classList.add('active');
                 
-                // --- CORREÇÃO: "LAZY LOAD" DA ÁRVORE ---
+                // --- "LAZY LOAD" DA ÁRVORE ---
                 if (!isTreeRendered && Object.keys(ncmTree).length > 0) {
                     showToast("Renderizando árvore hierárquica...", "info");
                     setTimeout(() => {
                         renderNCMTreeSecoes(ncmTreeContainer); // Renderiza só as seções
                         isTreeRendered = true;
-                    }, 50); // 50ms de espera
+                    }, 50); 
                 }
             }
         }
@@ -1162,7 +1164,6 @@
                 const parentNode = e.target.closest('.tree-node');
                 if (parentNode) {
                     
-                    // --- LÓGICA DE RENDERIZAÇÃO SOB DEMANDA ---
                     if (!parentNode.dataset.populated) {
                         const [level, code] = (parentNode.dataset.id || "").split('-');
                         if (level === "0") { // Clicou na Seção
@@ -1172,7 +1173,6 @@
                         }
                         parentNode.dataset.populated = "true";
                     }
-                    // --- FIM DA LÓGICA ---
                     
                     parentNode.classList.toggle('expanded');
                 }
@@ -1262,7 +1262,7 @@
                     dataDeAtualizacao = dataAtualizacaoMatch[1];
                 }
                 
-                // NOVO PARSER DE CSV
+                // PARSER DE CSV ROBUSTO
                 const parseCsvLine = (line, sep) => {
                     const values = [];
                     let currentVal = '';
@@ -1312,7 +1312,6 @@
                             endInfo = `Fim: ${dataFim}`;
                         }
                         
-                        // *** CORREÇÃO DO BUG ESTAVA AQUI ***
                         newDatabase[code] = { 
                             desc: desc,
                             status: status,
@@ -1713,7 +1712,7 @@
             naoVigenteG1CopyTitle.textContent = getPluralText(naoVigentesG1.length, "NCM Não Vigente (Grupo 1)", "NCMs Não Vigentes (Grupo 1)");
             compareNaoVigenteG1Box.classList.remove('hidden'); 
             if (naoVigentesG1.length > 0) {
-                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatNCM).join(', ');
+                compareNaoVigenteG1Text.value = naoVigentesG1.map(formatCompareText).join(', ');
                 compareNaoVigenteG1Text.placeholder = '';
             } else {
                 compareNaoVigenteG1Text.value = '';
@@ -1724,7 +1723,7 @@
             naoVigenteG2CopyTitle.textContent = getPluralText(naoVigentesG2.length, "NCM Não Vigente (Grupo 2)", "NCMs Não Vigentes (Grupo 2)");
             compareNaoVigenteG2Box.classList.remove('hidden'); 
             if (naoVigentesG2.length > 0) {
-                compareNaoVigenteG2Text.value = naoVigentesG2.map(formatNCM).join(', ');
+                compareNaoVigenteG2Text.value = naoVigentesG2.map(formatCompareText).join(', ');
                 compareNaoVigenteG2Text.placeholder = '';
             } else {
                 compareNaoVigenteG2Text.value = '';
@@ -1751,14 +1750,13 @@
         // ==========================================================
 
         function buildTree(tree, code, desc) {
-            // Remove todos os pontos (ex: 01.01.2 -> 01012)
             const cleanCode = code.replace(/\D/g, ''); 
             
             if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
                  if(cleanCode.length !== 5) return;
             }
 
-            let codeKey = cleanCode; // A chave será o código limpo
+            let codeKey = cleanCode;
             
             // Nível 1: Capítulo (01)
             if (cleanCode.length === 2) {
@@ -1779,7 +1777,7 @@
             }
             
             const pos = cleanCode.substring(0, 4);
-            if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
+            if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: code.substring(0, 4), children: {} };
 
             // Nível 3: Subposição 1 (0101.2 -> 01012)
             if (cleanCode.length === 5) { 
