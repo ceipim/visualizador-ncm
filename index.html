@@ -80,6 +80,14 @@
         h3 {
             font-size: 1.2rem;
         }
+        
+        /* Ajuste de espaçamento no título do card Livro NCM */
+        #aba-livro .card h2 {
+            margin-bottom: 0.25rem;
+        }
+        #aba-livro .card p {
+            margin-top: 0;
+        }
 
         #dataSourceInfo {
             text-align: center;
@@ -458,18 +466,37 @@
         }
         
         
+        /* ========================================================== */
         /* ESTILOS DA ABA "LIVRO DE NCMs" */
+        /* ========================================================== */
+        
         #ncmTree {
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
             background-color: #fff;
             border-radius: 8px;
             padding: 1.5rem;
-            max-height: 70vh; 
-            overflow-y: auto;
+            overflow-y: auto; /* Altura automática */
             border: 1px solid var(--color-border);
         }
         
+        /* NOVO: Item de Seção (estático) */
+        .ncm-secao-title {
+            list-style-type: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--color-primary-dark);
+            margin-top: 1.2rem;
+            font-family: var(--font-family); 
+            line-height: 1.4;
+            /* Recuo suspenso */
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+        }
+        .ncm-secao-title:first-child {
+            margin-top: 0;
+        }
+
         .tree-node {
             list-style-type: none;
             margin-left: 20px;
@@ -510,41 +537,31 @@
             display: block;
         }
         
-        .tree-node.level-0 > .node-label {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--color-primary-dark);
-            margin-top: 1rem;
-            font-family: var(--font-family); 
-            position: relative;
-            padding-left: 25px; 
-            line-height: 1.4;
+        /* Nível 1 (Capítulo) */
+        .tree-node.level-1 {
+            margin-top: 0.5rem; /* Espaço acima de cada capítulo */
         }
-        .tree-node.level-0 > .node-label::before {
-             position: absolute;
-             left: 5px;
-             top: 8px; 
-             margin-left: 0;
-             width: auto;
-        }
-        
         .tree-node.level-1 > .node-label {
             font-weight: bold;
             color: #000;
         }
         
+        /* Nível 2 (Posição) */
         .tree-node.level-2 > .node-label {
             color: var(--color-text);
         }
         
+        /* Nível 3 (Subposição 1) */
         .tree-node.level-3 > .node-label {
             color: var(--color-text-light);
         }
         
+        /* Nível 4 (Item) */
         .tree-node.level-4 > .node-label {
             color: var(--color-text-light);
         }
         
+        /* Nível 5 (Subitem - NCM 8 dígitos) */
         .tree-node.level-5 {
             color: #333;
         }
@@ -861,9 +878,9 @@
             </div>
             
             <div class="summary-copy-box comum hidden" id="comumCopyBox">
-                <h3 id="comumCopyTitle">NCMs comuns aos dois Grupos - (0)</h3>
+                <h3 id="comumCopyTitle">NCMs vigentes comuns aos dois Grupos - (0)</h3>
                 <div class="input-group">
-                    <textarea id="comumListText" readonly title="NCMs em comum, separadas por vírgula." placeholder="Nenhuma NCM em comum encontrada."></textarea>
+                    <textarea id="comumListText" readonly title="NCMs em comum, separadas por vírgula." placeholder="Nenhuma NCM vigente em comum encontrada."></textarea>
                     <button id="copyComumBtn" class="secondary">Copiar</button>
                 </div>
             </div>
@@ -873,7 +890,7 @@
         <div id="aba-livro" class="tab-content hidden">
             <div class="card">
                 <h2>Estrutura Hierárquica da NCM</h2>
-                <p style="color: var(--color-text-light); font-size: 0.9rem; margin-top: -0.5rem; margin-bottom: 1rem;">Clique nos itens para expandir e navegar pela árvore.</p>
+                <p style="color: var(--color-text-light); font-size: 0.9rem; margin-top: 0; margin-bottom: 1rem;">Clique nos itens para expandir e navegar pela árvore.</p>
                 <ul id="ncmTree">
                     </ul>
             </div>
@@ -1164,14 +1181,12 @@
                     const lines = text.split(/\r\n|\n/);
                     let headerLineIndex = -1;
                     for(let i = 0; i < 10; i++) { 
-                        // CORREÇÃO: Procurar pelos cabeçalhos com acento
                         if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
                             headerLineIndex = i;
                             break;
                         }
                     }
                     
-                    // Fallback para nomes sem acento
                     if (headerLineIndex === -1) {
                          for (let i = 0; i < 10; i++) {
                             if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
@@ -1211,7 +1226,6 @@
                     parsedData = findHeaders(csvText);
                 }
 
-                // Se falhar de novo, lança o erro
                 if (!parsedData) {
                     throw new Error(`Cabeçalhos (Código, Descrição, Data Fim) não encontrados no CSV. Verifique o arquivo.`);
                 }
@@ -1228,9 +1242,7 @@
                     dataDeAtualizacao = dataAtualizacaoMatch[1];
                 }
                 
-                // ==========================================================
-                // NOVO PARSER DE CSV (para lidar com aspas)
-                // ==========================================================
+                // NOVO PARSER DE CSV
                 const parseCsvLine = (line, sep) => {
                     const values = [];
                     let currentVal = '';
@@ -1239,9 +1251,9 @@
                         const char = line[i];
                         
                         if (char === '"') {
-                            if (inQuotes && line[i+1] === '"') { // Lida com "" (aspas duplas)
+                            if (inQuotes && line[i+1] === '"') { 
                                 currentVal += '"';
-                                i++; // Pula a próxima aspa
+                                i++; 
                             } else {
                                 inQuotes = !inQuotes;
                             }
@@ -1252,10 +1264,9 @@
                             currentVal += char;
                         }
                     }
-                    values.push(currentVal); // Adiciona o último valor
+                    values.push(currentVal);
                     return values.map(v => v.trim());
                 };
-                // ==========================================================
 
                 // Loop principal para processar o CSV
                 for (let i = headerLineIndex + 1; i < lines.length; i++) {
@@ -1269,7 +1280,6 @@
                     const code = codeRaw.replace(/\D/g, ''); 
                     const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
                     
-                    // 2. Alimenta o ncmDatabase (para Abas 1 e 2)
                     if (code.length === 8) {
                         const dataFim = values[idxDataFim];
                         let status = 'expirado';
@@ -1282,8 +1292,7 @@
                             endInfo = `Fim: ${dataFim}`;
                         }
                         
-                        // *** CORREÇÃO DO BUG ESTAVA AQUI ***
-                        // Adiciona ao NEWDatabase
+                        // *** CORREÇÃO DO BUG ***
                         newDatabase[code] = { 
                             desc: desc,
                             status: status,
@@ -1291,21 +1300,18 @@
                         };
                     }
                     
-                    // 3. Alimenta a ncmTree (para Aba 3)
                     buildTree(newTree, codeRaw, desc);
                 }
                 
-                ncmDatabase = newDatabase; // Atribuição correta
+                ncmDatabase = newDatabase; 
                 ncmTree = newTree;
 
                 if (Object.keys(ncmDatabase).length === 0) {
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                // 4. Renderiza a Árvore (Aba 3)
                 renderNCMTree(ncmTree, ncmTreeContainer);
 
-                // 5. Atualiza a UI
                 if(dataDeAtualizacao) {
                      const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                     if (dateMatch) {
@@ -1566,7 +1572,7 @@
             // 1. Processa NCMs do Grupo 1
             setG1.forEach(ncm => {
                 const ncmData = ncmDatabase[ncm];
-                const isVigente = (ncmData && ncmData.status === 'vigente');
+                let isVigente = (ncmData && ncmData.status === 'vigente');
                 
                 if (!isVigente) {
                     naoVigentesG1.push(ncm); // Inclui Expiradas e Inválidas
@@ -1583,16 +1589,17 @@
                 }
             });
 
-            // 2. Processa NCMs do Grupo 2 (apenas as que não estão em G1 e as não-vigentes)
+            // 2. Processa NCMs do Grupo 2
             setG2.forEach(ncm => {
                 const ncmData = ncmDatabase[ncm];
-                const isVigente = (ncmData && ncmData.status === 'vigente');
-                const isInG1 = setG1.has(ncm);
-
+                let isVigente = (ncmData && ncmData.status === 'vigente');
+                
                 if (!isVigente) {
                     naoVigentesG2.push(ncm);
-                } else {
-                    if (!isInG1) {
+                }
+                
+                if (!setG1.has(ncm)) { // Apenas as que não são comuns
+                    if (isVigente) {
                         exclusivoG2Vigente.push(ncm); 
                     }
                 }
@@ -1724,27 +1731,27 @@
         function buildTree(tree, code, desc) {
             const cleanCode = code.replace(/\D/g, ''); 
             
-            // Pula NCMs de 8 dígitos (elas não são "pais" na árvore)
+            // Pula NCMs de 8 dígitos (elas não são "pais" na árvore, são folhas)
+            // A lógica de NÍVEL 5 abaixo cuidará delas
             if (cleanCode.length === 8) {
-                return;
+                //return;
             }
             
             if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
-                 // Permite códigos como 0101.2 (length 5)
                  if(cleanCode.length !== 5) return;
             }
 
             // Nível 1: Capítulo (01)
             if (cleanCode.length === 2) {
-                if (!tree[cleanCode]) tree[cleanCode] = { desc: (cleanCode.length === 2 ? desc : '...'), code: code, children: {} };
-                tree[cleanCode].desc = desc; // Atualiza desc caso venha depois
+                if (!tree[cleanCode]) tree[cleanCode] = { desc: desc, code: code, children: {} };
+                else tree[cleanCode].desc = desc; 
             }
             // Nível 2: Posição (01.01 -> 0101)
             else if (cleanCode.length === 4) {
                 const cap = cleanCode.substring(0, 2);
                 if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
                 if (!tree[cap].children[cleanCode]) tree[cap].children[cleanCode] = { desc: desc, code: code, children: {} };
-                tree[cap].children[cleanCode].desc = desc;
+                else tree[cap].children[cleanCode].desc = desc;
             }
             // Nível 3: Subposição 1 (0101.2 -> 01012)
             else if (cleanCode.length === 5) { 
@@ -1753,18 +1760,18 @@
                 if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
                 if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
                 if (!tree[cap].children[pos].children[cleanCode]) tree[cap].children[pos].children[cleanCode] = { desc: desc, code: code, children: {} };
-                tree[cap].children[pos].children[cleanCode].desc = desc;
+                else tree[cap].children[pos].children[cleanCode].desc = desc;
             }
             // Nível 4: Subposição 2 (0101.21 -> 010121)
             else if (cleanCode.length === 6) {
                 const cap = cleanCode.substring(0, 2);
                 const pos = cleanCode.substring(0, 4);
-                const sub1 = cleanCode.substring(0, 5); // Chave do pai é '01012'
+                const sub1 = cleanCode.substring(0, 5); 
                 if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
                 if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
                 if (!tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: '...', code: cleanCode.substring(0, 5), children: {} };
                 if (!tree[cap].children[pos].children[sub1].children[cleanCode]) tree[cap].children[pos].children[sub1].children[cleanCode] = { desc: desc, code: code, children: {} };
-                tree[cap].children[pos].children[sub1].children[cleanCode].desc = desc;
+                else tree[cap].children[pos].children[sub1].children[cleanCode].desc = desc;
             }
             // Nível 5: Item (0101.21.0 -> 0101210)
             else if (cleanCode.length === 7) {
@@ -1777,7 +1784,22 @@
                 if (!tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: '...', code: sub1, children: {} };
                 if (!tree[cap].children[pos].children[sub1].children[sub2]) tree[cap].children[pos].children[sub1].children[sub2] = { desc: '...', code: sub2, children: {} };
                 if (!tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode]) tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode] = { desc: desc, code: code, children: {} };
-                tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode].desc = desc;
+                else tree[cap].children[pos].children[sub1].children[sub2].children[cleanCode].desc = desc;
+            }
+             // Nível 6: Subitem (0101.21.00 -> 01012100)
+            else if (cleanCode.length === 8) {
+                const cap = cleanCode.substring(0, 2);
+                const pos = cleanCode.substring(0, 4);
+                const sub1 = cleanCode.substring(0, 5);
+                const sub2 = cleanCode.substring(0, 6);
+                const item = cleanCode.substring(0, 7);
+                if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
+                if (!tree[cap].children[pos]) tree[cap].children[pos] = { desc: '...', code: pos, children: {} };
+                if (!tree[cap].children[pos].children[sub1]) tree[cap].children[pos].children[sub1] = { desc: '...', code: sub1, children: {} };
+                if (!tree[cap].children[pos].children[sub1].children[sub2]) tree[cap].children[pos].children[sub1].children[sub2] = { desc: '...', code: sub2, children: {} };
+                if (!tree[cap].children[pos].children[sub1].children[sub2].children[item]) tree[cap].children[pos].children[sub1].children[sub2].children[item] = { desc: '...', code: item, children: {} };
+                if (!tree[cap].children[pos].children[sub1].children[sub2].children[item].children[cleanCode]) tree[cap].children[pos].children[sub1].children[sub2].children[item].children[cleanCode] = { desc: desc, code: code, children: {} };
+                else tree[cap].children[pos].children[sub1].children[sub2].children[item].children[cleanCode].desc = desc;
             }
         }
         
@@ -1810,17 +1832,24 @@
             
             for (const secaoId in secoesNCM) {
                 const secao = secoesNCM[secaoId];
-                const secaoNode = createTreeNode(secao.nome, 0);
+                // Cria o nó da Seção (estático, não clicável)
+                const secaoNode = document.createElement('li');
+                secaoNode.className = 'ncm-secao-title';
+                secaoNode.textContent = secao.nome;
+                container.appendChild(secaoNode);
                 
+                // Cria uma sub-lista UL para os capítulos
+                const capList = document.createElement('ul');
+                container.appendChild(capList);
+
                 secao.caps.forEach(capId => {
                     const capData = tree[capId];
                     if (capData) {
                         const capNode = createTreeNode(`Capítulo ${capData.code} - ${capData.desc}`, 1);
                         buildRecursiveTree(capData.children, capNode.querySelector('.sub-tree'), 2);
-                        secaoNode.querySelector('.sub-tree').appendChild(capNode);
+                        capList.appendChild(capNode); // Adiciona o Capítulo à lista
                     }
                 });
-                container.appendChild(secaoNode);
             }
         }
         
@@ -1831,17 +1860,18 @@
                 const data = children[key];
                 const hasChildren = Object.keys(data.children).length > 0;
                 
-                const isLeaf = (level === 5 || !hasChildren); 
+                // Nível 6 é a folha (NCM 8 dígitos) na nova lógica
+                const isLeaf = (level === 6 || !hasChildren); 
                 
                 // Pega a NCM de 8 dígitos do banco de dados para checar o status
                 let ncmData = null;
-                if (level === 5) {
-                    ncmData = ncmDatabase[key]; // A chave já é o código de 8 dígitos limpo
+                if (level === 6) { // Nível 6 é o subitem (8 dígitos)
+                    ncmData = ncmDatabase[key];
                 }
                 
                 let labelText = `${data.code} - ${data.desc}`;
                 
-                if (level === 5 && ncmData && ncmData.status === 'expirado') {
+                if (level === 6 && ncmData && ncmData.status === 'expirado') {
                     labelText += ` (Expirada)`;
                 }
                 
@@ -1862,7 +1892,7 @@
             label.className = 'node-label';
             label.textContent = text;
             
-            if (level === 5 && text.includes('(Expirada)')) {
+            if (level === 6 && text.includes('(Expirada)')) {
                 label.style.color = "var(--color-warning-dark)"; // Destaca NCM expirada
             }
             
