@@ -466,17 +466,14 @@
         }
         
         
-        /* ========================================================== */
         /* ESTILOS DA ABA "LIVRO DE NCMs" */
-        /* ========================================================== */
-        
         #ncmTree {
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
             background-color: #fff;
             border-radius: 8px;
             padding: 1.5rem;
-            overflow-y: auto; /* Altura automática */
+            overflow-y: auto;
             border: 1px solid var(--color-border);
         }
         
@@ -489,7 +486,6 @@
             margin-top: 1.2rem;
             font-family: var(--font-family); 
             line-height: 1.4;
-            /* Recuo suspenso */
             padding-left: 1.5em;
             text-indent: -1.5em;
         }
@@ -539,7 +535,7 @@
         
         /* Nível 1 (Capítulo) */
         .tree-node.level-1 {
-            margin-top: 0.5rem; /* Espaço acima de cada capítulo */
+            margin-top: 0.5rem;
         }
         .tree-node.level-1 > .node-label {
             font-weight: bold;
@@ -1043,6 +1039,9 @@
         const compareNaoVigenteG2Text = document.getElementById('compareNaoVigenteG2Text');
         const copyCompareNaoVigenteG2Btn = document.getElementById('copyCompareNaoVigenteG2Btn');
         const naoVigenteG2CopyTitle = document.getElementById('naoVigenteG2CopyTitle'); 
+        
+        // Flag para a Aba 3
+        let isTreeRendered = false;
 
 
         // --- Lógica de Atualização (Modais) ---
@@ -1128,6 +1127,16 @@
             } else if (tabName === 'livro') {
                 abaLivro.classList.remove('hidden');
                 tabBtnLivro.classList.add('active');
+                
+                // --- CORREÇÃO: "LAZY LOAD" DA ÁRVORE ---
+                if (!isTreeRendered && Object.keys(ncmTree).length > 0) {
+                    showToast("Renderizando árvore hierárquica...", "info");
+                    // Usar setTimeout para permitir que o toast apareça antes do congelamento
+                    setTimeout(() => {
+                        renderNCMTree(ncmTree, ncmTreeContainer);
+                        isTreeRendered = true;
+                    }, 50); // 50ms de espera
+                }
             }
         }
         
@@ -1148,7 +1157,7 @@
         copyCompareNaoVigenteG1Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG1Text, "Lista de NCMs não vigentes (G1) copiada!"));
         copyCompareNaoVigenteG2Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG2Text, "Lista de NCMs não vigentes (G2) copiada!"));
         
-        // --- Listeners ABA 3: LIVRO DA NCMs ---
+        // --- Listeners ABA 3: LIVRO DE NCMs ---
         ncmTreeContainer.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('node-label')) {
                 const parentNode = e.target.closest('.tree-node');
@@ -1181,12 +1190,14 @@
                     const lines = text.split(/\r\n|\n/);
                     let headerLineIndex = -1;
                     for(let i = 0; i < 10; i++) { 
+                        // CORREÇÃO: Procurar pelos cabeçalhos com acento
                         if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
                             headerLineIndex = i;
                             break;
                         }
                     }
                     
+                    // Fallback para nomes sem acento
                     if (headerLineIndex === -1) {
                          for (let i = 0; i < 10; i++) {
                             if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
@@ -1310,8 +1321,10 @@
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                renderNCMTree(ncmTree, ncmTreeContainer);
+                // 4. NÃO renderiza a Árvore (Aba 3) - Será feito ao clicar na aba
+                // renderNCMTree(ncmTree, ncmTreeContainer);
 
+                // 5. Atualiza a UI
                 if(dataDeAtualizacao) {
                      const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                     if (dateMatch) {
@@ -1731,27 +1744,21 @@
         function buildTree(tree, code, desc) {
             const cleanCode = code.replace(/\D/g, ''); 
             
-            // Pula NCMs de 8 dígitos (elas não são "pais" na árvore, são folhas)
-            // A lógica de NÍVEL 5 abaixo cuidará delas
-            if (cleanCode.length === 8) {
-                //return;
-            }
-            
             if (cleanCode.length < 2 || cleanCode.length > 8 || cleanCode.length === 3 || cleanCode.length === 5) {
                  if(cleanCode.length !== 5) return;
             }
 
             // Nível 1: Capítulo (01)
             if (cleanCode.length === 2) {
-                if (!tree[cleanCode]) tree[cleanCode] = { desc: desc, code: code, children: {} };
-                else tree[cleanCode].desc = desc; 
+                if (!tree[cleanCode]) tree[cleanCode] = { desc: (cleanCode.length === 2 ? desc : '...'), code: code, children: {} };
+                tree[cleanCode].desc = desc; 
             }
             // Nível 2: Posição (01.01 -> 0101)
             else if (cleanCode.length === 4) {
                 const cap = cleanCode.substring(0, 2);
                 if (!tree[cap]) tree[cap] = { desc: '...', code: cap, children: {} };
                 if (!tree[cap].children[cleanCode]) tree[cap].children[cleanCode] = { desc: desc, code: code, children: {} };
-                else tree[cap].children[cleanCode].desc = desc;
+                tree[cap].children[cleanCode].desc = desc;
             }
             // Nível 3: Subposição 1 (0101.2 -> 01012)
             else if (cleanCode.length === 5) { 
@@ -1832,13 +1839,11 @@
             
             for (const secaoId in secoesNCM) {
                 const secao = secoesNCM[secaoId];
-                // Cria o nó da Seção (estático, não clicável)
                 const secaoNode = document.createElement('li');
                 secaoNode.className = 'ncm-secao-title';
                 secaoNode.textContent = secao.nome;
                 container.appendChild(secaoNode);
                 
-                // Cria uma sub-lista UL para os capítulos
                 const capList = document.createElement('ul');
                 container.appendChild(capList);
 
@@ -1847,7 +1852,7 @@
                     if (capData) {
                         const capNode = createTreeNode(`Capítulo ${capData.code} - ${capData.desc}`, 1);
                         buildRecursiveTree(capData.children, capNode.querySelector('.sub-tree'), 2);
-                        capList.appendChild(capNode); // Adiciona o Capítulo à lista
+                        capList.appendChild(capNode); 
                     }
                 });
             }
@@ -1860,12 +1865,10 @@
                 const data = children[key];
                 const hasChildren = Object.keys(data.children).length > 0;
                 
-                // Nível 6 é a folha (NCM 8 dígitos) na nova lógica
                 const isLeaf = (level === 6 || !hasChildren); 
                 
-                // Pega a NCM de 8 dígitos do banco de dados para checar o status
                 let ncmData = null;
-                if (level === 6) { // Nível 6 é o subitem (8 dígitos)
+                if (level === 6) { 
                     ncmData = ncmDatabase[key];
                 }
                 
@@ -1893,7 +1896,7 @@
             label.textContent = text;
             
             if (level === 6 && text.includes('(Expirada)')) {
-                label.style.color = "var(--color-warning-dark)"; // Destaca NCM expirada
+                label.style.color = "var(--color-warning-dark)"; 
             }
             
             li.appendChild(label);
