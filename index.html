@@ -465,7 +465,7 @@
             background-color: #fff;
             border-radius: 8px;
             padding: 1.5rem;
-            /* max-height removido para mostrar tudo */
+            max-height: 70vh; 
             overflow-y: auto;
             border: 1px solid var(--color-border);
         }
@@ -510,49 +510,41 @@
             display: block;
         }
         
-        /* Nível 0 (Seção) - CSS PARA RECUO SUSPENSO */
         .tree-node.level-0 > .node-label {
             font-weight: bold;
             font-size: 1.1rem;
             color: var(--color-primary-dark);
             margin-top: 1rem;
             font-family: var(--font-family); 
-            
-            /* Correção do Recuo */
             position: relative;
-            padding-left: 25px; /* Espaço para o expansor */
+            padding-left: 25px; 
             line-height: 1.4;
         }
         .tree-node.level-0 > .node-label::before {
              position: absolute;
              left: 5px;
-             top: 8px; /* Ajuste vertical */
+             top: 8px; 
              margin-left: 0;
              width: auto;
         }
         
-        /* Nível 1 (Capítulo) */
         .tree-node.level-1 > .node-label {
             font-weight: bold;
             color: #000;
         }
         
-        /* Nível 2 (Posição) */
         .tree-node.level-2 > .node-label {
             color: var(--color-text);
         }
         
-        /* Nível 3 (Subposição 1) */
         .tree-node.level-3 > .node-label {
             color: var(--color-text-light);
         }
         
-        /* Nível 4 (Item) */
         .tree-node.level-4 > .node-label {
             color: var(--color-text-light);
         }
         
-        /* Nível 5 (Subitem - NCM 8 dígitos) */
         .tree-node.level-5 {
             color: #333;
         }
@@ -563,7 +555,7 @@
             content: '•';
             font-size: 0.6em;
             vertical-align: middle;
-            position: static; /* Reseta a posição absoluta */
+            position: static; 
             transform: none;
         }
 
@@ -1290,7 +1282,8 @@
                             endInfo = `Fim: ${dataFim}`;
                         }
                         
-                        // *** A CORREÇÃO ESTÁ AQUI ***
+                        // *** CORREÇÃO DO BUG ESTAVA AQUI ***
+                        // Adiciona ao NEWDatabase
                         newDatabase[code] = { 
                             desc: desc,
                             status: status,
@@ -1302,7 +1295,7 @@
                     buildTree(newTree, codeRaw, desc);
                 }
                 
-                ncmDatabase = newDatabase; 
+                ncmDatabase = newDatabase; // Atribuição correta
                 ncmTree = newTree;
 
                 if (Object.keys(ncmDatabase).length === 0) {
@@ -1563,26 +1556,26 @@
             g1InputCount.textContent = `- (${setG1.size} NCMs)`;
             g2InputCount.textContent = `- (${setG2.size} NCMs)`;
 
-            const comum = [];
+            const comumVigente = [];
             const exclusivoG1Vigente = [];
             const exclusivoG2Vigente = [];
             
             const naoVigentesG1 = [];
             const naoVigentesG2 = [];
 
-            // 1. Processa NCMs em G1
+            // 1. Processa NCMs do Grupo 1
             setG1.forEach(ncm => {
                 const ncmData = ncmDatabase[ncm];
-                let isVigente = false;
+                const isVigente = (ncmData && ncmData.status === 'vigente');
                 
-                if (ncmData && ncmData.status === 'vigente') {
-                    isVigente = true;
-                } else {
+                if (!isVigente) {
                     naoVigentesG1.push(ncm); // Inclui Expiradas e Inválidas
                 }
                 
                 if (setG2.has(ncm)) {
-                    comum.push(ncm); 
+                    if (isVigente) {
+                        comumVigente.push(ncm);
+                    }
                 } else {
                     if (isVigente) {
                         exclusivoG1Vigente.push(ncm); 
@@ -1590,26 +1583,23 @@
                 }
             });
 
-            // 2. Processa NCMs em G2
+            // 2. Processa NCMs do Grupo 2 (apenas as que não estão em G1 e as não-vigentes)
             setG2.forEach(ncm => {
                 const ncmData = ncmDatabase[ncm];
-                let isVigente = false;
-                
-                if (ncmData && ncmData.status === 'vigente') {
-                    isVigente = true;
+                const isVigente = (ncmData && ncmData.status === 'vigente');
+                const isInG1 = setG1.has(ncm);
+
+                if (!isVigente) {
+                    naoVigentesG2.push(ncm);
                 } else {
-                    naoVigentesG2.push(ncm); // Inclui Expiradas e Inválidas
-                }
-                
-                if (!setG1.has(ncm)) {
-                    if (isVigente) {
+                    if (!isInG1) {
                         exclusivoG2Vigente.push(ncm); 
                     }
                 }
             });
             
             // 3. Exibe os resultados
-            displayCompareResults(comum, exclusivoG1Vigente, exclusivoG2Vigente, naoVigentesG1, naoVigentesG2);
+            displayCompareResults(comumVigente, exclusivoG1Vigente, exclusivoG2Vigente, naoVigentesG1, naoVigentesG2);
             
             showToast("Comparação concluída!", "success");
         }
@@ -1634,7 +1624,7 @@
             
             exclusivoG1CopyTitle.textContent = getPluralText(0, "NCM vigente contida apenas no Grupo 1", "NCMs vigentes contidas apenas no Grupo 1");
             exclusivoG2CopyTitle.textContent = getPluralText(0, "NCM vigente contida apenas no Grupo 2", "NCMs vigentes contidas apenas no Grupo 2");
-            comumCopyTitle.textContent = getPluralText(0, "NCM comum aos dois Grupos", "NCMs comuns aos dois Grupos");
+            comumCopyTitle.textContent = getPluralText(0, "NCM vigente comum aos dois Grupos", "NCMs vigentes comuns aos dois Grupos");
             naoVigenteG1CopyTitle.textContent = getPluralText(0, "NCM Não Vigente (Grupo 1)", "NCMs Não Vigentes (Grupo 1)");
             naoVigenteG2CopyTitle.textContent = getPluralText(0, "NCM Não Vigente (Grupo 2)", "NCMs Não Vigentes (Grupo 2)");
             
@@ -1658,14 +1648,14 @@
             naoVigentesG2.sort();
 
             // Popula Em Comum
-            comumCopyTitle.textContent = getPluralText(comum.length, "NCM comum aos dois Grupos", "NCMs comuns aos dois Grupos");
+            comumCopyTitle.textContent = getPluralText(comum.length, "NCM vigente comum aos dois Grupos", "NCMs vigentes comuns aos dois Grupos");
             comumCopyBox.classList.remove('hidden'); 
             if (comum.length > 0) {
                 comumListText.value = comum.map(formatCompareText).join(', '); 
                 comumListText.placeholder = '';
             } else {
                 comumListText.value = '';
-                comumListText.placeholder = 'Nenhuma NCM em comum encontrada.';
+                comumListText.placeholder = 'Nenhuma NCM vigente em comum encontrada.';
             }
 
             // Popula Apenas no Grupo 1
@@ -1844,10 +1834,13 @@
                 const isLeaf = (level === 5 || !hasChildren); 
                 
                 // Pega a NCM de 8 dígitos do banco de dados para checar o status
-                const ncmData = ncmDatabase[key.padEnd(8, '0')]; // Preenche com zeros se for < 8
+                let ncmData = null;
+                if (level === 5) {
+                    ncmData = ncmDatabase[key]; // A chave já é o código de 8 dígitos limpo
+                }
+                
                 let labelText = `${data.code} - ${data.desc}`;
                 
-                // Adiciona status (Expirada) apenas para NCMs de 8 dígitos
                 if (level === 5 && ncmData && ncmData.status === 'expirado') {
                     labelText += ` (Expirada)`;
                 }
@@ -1870,7 +1863,7 @@
             label.textContent = text;
             
             if (level === 5 && text.includes('(Expirada)')) {
-                label.style.color = "var(--color-error-dark)"; // Destaca NCM expirada
+                label.style.color = "var(--color-warning-dark)"; // Destaca NCM expirada
             }
             
             li.appendChild(label);
