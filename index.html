@@ -81,7 +81,6 @@
             font-size: 1.2rem;
         }
         
-        /* Ajuste de espaçamento no título do card Livro NCM */
         #aba-livro .card h2 {
             margin-bottom: 0.25rem;
         }
@@ -477,7 +476,7 @@
             border: 1px solid var(--color-border);
         }
         
-        /* NOVO: Item de Seção (estático) */
+        /* Nível 0 (Seção) - Estático */
         .ncm-secao-title {
             list-style-type: none;
             font-weight: bold;
@@ -955,6 +954,9 @@
         let lastNaoVigentes = []; // Expiradas + Inválidas
 
         const CSV_FILE = 'Tabela_NCM_Vigente.csv';
+        
+        // Flag para a Aba 3
+        let isTreeRendered = false;
 
         // --- Seleção de Elementos DOM ---
         
@@ -1039,9 +1041,6 @@
         const compareNaoVigenteG2Text = document.getElementById('compareNaoVigenteG2Text');
         const copyCompareNaoVigenteG2Btn = document.getElementById('copyCompareNaoVigenteG2Btn');
         const naoVigenteG2CopyTitle = document.getElementById('naoVigenteG2CopyTitle'); 
-        
-        // Flag para a Aba 3
-        let isTreeRendered = false;
 
 
         // --- Lógica de Atualização (Modais) ---
@@ -1131,7 +1130,6 @@
                 // --- CORREÇÃO: "LAZY LOAD" DA ÁRVORE ---
                 if (!isTreeRendered && Object.keys(ncmTree).length > 0) {
                     showToast("Renderizando árvore hierárquica...", "info");
-                    // Usar setTimeout para permitir que o toast apareça antes do congelamento
                     setTimeout(() => {
                         renderNCMTree(ncmTree, ncmTreeContainer);
                         isTreeRendered = true;
@@ -1157,11 +1155,24 @@
         copyCompareNaoVigenteG1Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG1Text, "Lista de NCMs não vigentes (G1) copiada!"));
         copyCompareNaoVigenteG2Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG2Text, "Lista de NCMs não vigentes (G2) copiada!"));
         
-        // --- Listeners ABA 3: LIVRO DE NCMs ---
+        // --- Listeners ABA 3: LIVRO DA NCMs ---
         ncmTreeContainer.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('node-label')) {
                 const parentNode = e.target.closest('.tree-node');
                 if (parentNode) {
+                    
+                    // --- LÓGICA DE RENDERIZAÇÃO SOB DEMANDA ---
+                    if (!parentNode.dataset.populated) {
+                        const [level, code] = (parentNode.dataset.id || "").split('-');
+                        if (level === "0") { // Clicou na Seção
+                            populateCapitulos(parentNode, secoesNCM[code].caps);
+                        } else { // Clicou no Capítulo ou Nível > 1
+                            populateChildren(parentNode, level, code);
+                        }
+                        parentNode.dataset.populated = "true";
+                    }
+                    // --- FIM DA LÓGICA ---
+                    
                     parentNode.classList.toggle('expanded');
                 }
             }
@@ -1190,14 +1201,12 @@
                     const lines = text.split(/\r\n|\n/);
                     let headerLineIndex = -1;
                     for(let i = 0; i < 10; i++) { 
-                        // CORREÇÃO: Procurar pelos cabeçalhos com acento
                         if(lines[i] && lines[i].toLowerCase().includes("código") && lines[i].toLowerCase().includes("descrição")) {
                             headerLineIndex = i;
                             break;
                         }
                     }
                     
-                    // Fallback para nomes sem acento
                     if (headerLineIndex === -1) {
                          for (let i = 0; i < 10; i++) {
                             if (lines[i] && lines[i].toLowerCase().includes("codigo") && lines[i].toLowerCase().includes("descricao")) {
@@ -1228,7 +1237,6 @@
                 encodingUsed = 'UTF-8';
                 let parsedData = findHeaders(csvText);
                 
-                // Se falhar (caracteres quebrados), tenta latin1
                 if (!parsedData) {
                     console.warn("Não foi possível encontrar cabeçalhos com UTF-8. Tentando com iso-8859-1 (latin1)...");
                     decoder = new TextDecoder('iso-8859-1');
@@ -1303,7 +1311,6 @@
                             endInfo = `Fim: ${dataFim}`;
                         }
                         
-                        // *** CORREÇÃO DO BUG ***
                         newDatabase[code] = { 
                             desc: desc,
                             status: status,
@@ -1321,8 +1328,8 @@
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                // 4. NÃO renderiza a Árvore (Aba 3) - Será feito ao clicar na aba
-                // renderNCMTree(ncmTree, ncmTreeContainer);
+                // 4. Renderiza APENAS AS SEÇÕES
+                renderNCMTreeSecoes(ncmTreeContainer);
 
                 // 5. Atualiza a UI
                 if(dataDeAtualizacao) {
@@ -1834,56 +1841,87 @@
             "XXI": { "nome": "Seção XXI - OBJETOS DE ARTE, DE COLEÇÃO E ANTIGUIDADES", "caps": ["97"] }
         };
 
-        function renderNCMTree(tree, container) {
-            container.innerHTML = ''; 
+        // Modificado para "Lazy Loading"
+        function renderNCMTree(container) {
+            container.innerHTML = ''; // Limpa
             
             for (const secaoId in secoesNCM) {
                 const secao = secoesNCM[secaoId];
+                // Cria o nó da Seção (estático, não clicável)
                 const secaoNode = document.createElement('li');
                 secaoNode.className = 'ncm-secao-title';
                 secaoNode.textContent = secao.nome;
                 container.appendChild(secaoNode);
                 
+                // Cria uma sub-lista UL para os capítulos
                 const capList = document.createElement('ul');
+                capList.className = 'sub-tree'; // Começa como uma sub-árvore normal
                 container.appendChild(capList);
 
                 secao.caps.forEach(capId => {
-                    const capData = tree[capId];
+                    const capData = ncmTree[capId];
                     if (capData) {
+                        // Nível 1 (Capítulo)
                         const capNode = createTreeNode(`Capítulo ${capData.code} - ${capData.desc}`, 1);
-                        buildRecursiveTree(capData.children, capNode.querySelector('.sub-tree'), 2);
-                        capList.appendChild(capNode); 
+                        capNode.dataset.id = `1-${capId}`; // Armazena o ID
+                        capList.appendChild(capNode);
                     }
                 });
             }
         }
         
-        function buildRecursiveTree(children, parentElement, level) {
-            const keys = Object.keys(children).sort(); 
+        // Modificado para "Lazy Loading"
+        function populateChildren(parentNode, level, code) {
+            const subTreeContainer = parentNode.querySelector('.sub-tree');
+            if (!subTreeContainer) return; // Nó é uma folha
+
+            let childrenData;
+            
+            // Navega na árvore de dados para encontrar os filhos corretos
+            try {
+                 if (level === "1") { // Clicou no Capítulo
+                    childrenData = ncmTree[code].children; // ex: ncmTree['01'].children
+                } else if (level === "2") { // Clicou na Posição
+                    childrenData = ncmTree[code.substring(0, 2)].children[code].children;
+                } else if (level === "3") { // Clicou na Subposição 1
+                    childrenData = ncmTree[code.substring(0, 2)].children[code.substring(0, 4)].children[code].children;
+                } else if (level === "4") { // Clicou na Subposição 2
+                    childrenData = ncmTree[code.substring(0, 2)].children[code.substring(0, 4)].children[code.substring(0, 5)].children[code].children;
+                } else if (level === "5") { // Clicou no Item
+                    childrenData = ncmTree[code.substring(0, 2)].children[code.substring(0, 4)].children[code.substring(0, 5)].children[code.substring(0, 6)].children[code].children;
+                } else {
+                    return; // Nível 6 (folha) não tem filhos
+                }
+            } catch(e) {
+                console.warn(`Erro ao buscar filhos para ${code}`, e);
+                return; // Nó não encontrado na árvore de dados
+            }
+
+            const keys = Object.keys(childrenData).sort(); 
+            const nextLevel = parseInt(level) + 1;
             
             keys.forEach(key => {
-                const data = children[key];
+                const data = childrenData[key];
                 const hasChildren = Object.keys(data.children).length > 0;
                 
-                const isLeaf = (level === 6 || !hasChildren); 
+                const isLeaf = (nextLevel === 6 || !hasChildren); 
                 
                 let ncmData = null;
-                if (level === 6) { 
+                if (nextLevel === 6) { 
                     ncmData = ncmDatabase[key];
                 }
                 
                 let labelText = `${data.code} - ${data.desc}`;
                 
-                if (level === 6 && ncmData && ncmData.status === 'expirado') {
+                if (nextLevel === 6 && ncmData && ncmData.status === 'expirado') {
                     labelText += ` (Expirada)`;
                 }
                 
-                const node = createTreeNode(labelText, level, isLeaf);
-                
-                if (hasChildren) {
-                    buildRecursiveTree(data.children, node.querySelector('.sub-tree'), level + 1);
+                const node = createTreeNode(labelText, nextLevel, isLeaf);
+                if (!isLeaf) {
+                    node.dataset.id = `${nextLevel}-${key}`; // Armazena o ID
                 }
-                parentElement.appendChild(node);
+                subTreeContainer.appendChild(node);
             });
         }
         
