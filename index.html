@@ -465,7 +465,7 @@
             background-color: #fff;
             border-radius: 8px;
             padding: 1.5rem;
-            max-height: 70vh;
+            /* max-height removido para mostrar tudo */
             overflow-y: auto;
             border: 1px solid var(--color-border);
         }
@@ -510,13 +510,25 @@
             display: block;
         }
         
-        /* Nível 0 (Seção) */
+        /* Nível 0 (Seção) - CSS PARA RECUO SUSPENSO */
         .tree-node.level-0 > .node-label {
             font-weight: bold;
             font-size: 1.1rem;
             color: var(--color-primary-dark);
             margin-top: 1rem;
             font-family: var(--font-family); 
+            
+            /* Correção do Recuo */
+            position: relative;
+            padding-left: 25px; /* Espaço para o expansor */
+            line-height: 1.4;
+        }
+        .tree-node.level-0 > .node-label::before {
+             position: absolute;
+             left: 5px;
+             top: 8px; /* Ajuste vertical */
+             margin-left: 0;
+             width: auto;
         }
         
         /* Nível 1 (Capítulo) */
@@ -551,6 +563,8 @@
             content: '•';
             font-size: 0.6em;
             vertical-align: middle;
+            position: static; /* Reseta a posição absoluta */
+            transform: none;
         }
 
 
@@ -1221,12 +1235,41 @@
                 if (dataAtualizacaoMatch) {
                     dataDeAtualizacao = dataAtualizacaoMatch[1];
                 }
+                
+                // ==========================================================
+                // NOVO PARSER DE CSV (para lidar com aspas)
+                // ==========================================================
+                const parseCsvLine = (line, sep) => {
+                    const values = [];
+                    let currentVal = '';
+                    let inQuotes = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        
+                        if (char === '"') {
+                            if (inQuotes && line[i+1] === '"') { // Lida com "" (aspas duplas)
+                                currentVal += '"';
+                                i++; // Pula a próxima aspa
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === sep && !inQuotes) {
+                            values.push(currentVal);
+                            currentVal = '';
+                        } else {
+                            currentVal += char;
+                        }
+                    }
+                    values.push(currentVal); // Adiciona o último valor
+                    return values.map(v => v.trim());
+                };
+                // ==========================================================
 
                 // Loop principal para processar o CSV
                 for (let i = headerLineIndex + 1; i < lines.length; i++) {
                     if (!lines[i]) continue;
                     
-                    const values = lines[i].split(separator).map(v => v.replace(/"/g, ''));
+                    const values = parseCsvLine(lines[i], separator);
                     
                     if (values.length < headers.length) continue; 
                     
@@ -1248,7 +1291,6 @@
                         }
                         
                         // *** A CORREÇÃO ESTÁ AQUI ***
-                        // Adiciona ao NEWDatabase, não ao ncmDatabase
                         newDatabase[code] = { 
                             desc: desc,
                             status: status,
@@ -1260,7 +1302,7 @@
                     buildTree(newTree, codeRaw, desc);
                 }
                 
-                ncmDatabase = newDatabase; // Atribuição correta
+                ncmDatabase = newDatabase; 
                 ncmTree = newTree;
 
                 if (Object.keys(ncmDatabase).length === 0) {
@@ -1704,7 +1746,7 @@
 
             // Nível 1: Capítulo (01)
             if (cleanCode.length === 2) {
-                if (!tree[cleanCode]) tree[cleanCode] = { desc: desc, code: code, children: {} };
+                if (!tree[cleanCode]) tree[cleanCode] = { desc: (cleanCode.length === 2 ? desc : '...'), code: code, children: {} };
                 tree[cleanCode].desc = desc; // Atualiza desc caso venha depois
             }
             // Nível 2: Posição (01.01 -> 0101)
@@ -1752,23 +1794,23 @@
         const secoesNCM = {
             "I": { "nome": "Seção I - ANIMAIS VIVOS E PRODUTOS DO REINO ANIMAL", "caps": ["01", "02", "03", "04", "05"] },
             "II": { "nome": "Seção II - PRODUTOS DO REINO VEGETAL", "caps": ["06", "07", "08", "09", "10", "11", "12", "13", "14"] },
-            "III": { "nome": "Seção III - GORDURAS E ÓLEOS ANIMAIS, VEGETAIS...", "caps": ["15"] },
-            "IV": { "nome": "Seção IV - PRODUTOS DAS INDÚSTRIAS ALIMENTARES...", "caps": ["16", "17", "18", "19", "20", "21", "22", "23", "24"] },
+            "III": { "nome": "Seção III - GORDURAS E ÓLEOS ANIMAIS, VEGETAIS OU DE ORIGEM MICROBIANA E PRODUTOS DA SUA DISSOCIAÇÃO; GORDURAS ALIMENTÍCIAS ELABORADAS; CERAS DE ORIGEM ANIMAL OU VEGETAL", "caps": ["15"] },
+            "IV": { "nome": "Seção IV - PRODUTOS DAS INDÚSTRIAS ALIMENTARES; BEBIDAS, LÍQUIDOS ALCOÓLICOS E VINAGRES; TABACO E SEUS SUCEDÂNEOS MANUFATURADOS; PRODUTOS, MESMO COM NICOTINA, DESTINADOS À INALAÇÃO SEM COMBUSTÃO; OUTROS PRODUTOS QUE CONTENHAM NICOTINA DESTINADOS À ABSORÇÃO DA NICOTINA PELO CORPO HUMANO", "caps": ["16", "17", "18", "19", "20", "21", "22", "23", "24"] },
             "V": { "nome": "Seção V - PRODUTOS MINERAIS", "caps": ["25", "26", "27"] },
-            "VI": { "nome": "Seção VI - PRODUTOS DAS INDÚSTRIAS QUÍMICAS...", "caps": ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38"] },
+            "VI": { "nome": "Seção VI - PRODUTOS DAS INDÚSTRIAS QUÍMICAS OU DAS INDÚSTRIAS CONEXAS", "caps": ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38"] },
             "VII": { "nome": "Seção VII - PLÁSTICO E SUAS OBRAS; BORRACHA E SUAS OBRAS", "caps": ["39", "40"] },
-            "VIII": { "nome": "Seção VIII - PELES, COUROS, PELES COM PELO...", "caps": ["41", "42", "43"] },
-            "IX": { "nome": "Seção IX - MADEIRA, CARVÃO VEGETAL E OBRAS DE MADEIRA...", "caps": ["44", "45", "46"] },
-            "X": { "nome": "Seção X - PASTAS DE MADEIRA OU DE OUTRAS MATÉRIAS FIBROSAS...", "caps": ["47", "48", "49"] },
+            "VIII": { "nome": "Seção VIII - PELES, COUROS, PELES COM PELO E OBRAS DESTAS MATÉRIAS; ARTIGOS DE CORREEIRO OU DE SELEIRO; ARTIGOS DE VIAGEM, BOLSAS E ARTIGOS SEMELHANTES; OBRAS DE TRIPA", "caps": ["41", "42", "43"] },
+            "IX": { "nome": "Seção IX - MADEIRA, CARVÃO VEGETAL E OBRAS DE MADEIRA; CORTIÇA E SUAS OBRAS; OBRAS DE ESPARTARIA OU DE CESTARIA", "caps": ["44", "45", "46"] },
+            "X": { "nome": "Seção X - PASTAS DE MADEIRA OU DE OUTRAS MATÉRIAS FIBROSAS CELULÓSICAS; PAPEL OU CARTÃO PARA RECICLAR (DESPERDÍCIOS E RESÍDUOS); PAPEL OU CARTÃO E SUAS OBRAS", "caps": ["47", "48", "49"] },
             "XI": { "nome": "Seção XI - MATÉRIAS TÊXTEIS E SUAS OBRAS", "caps": ["50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"] },
-            "XII": { "nome": "Seção XII - CALÇADO, CHAPÉUS E ARTIGOS DE USO SEMELHANTE...", "caps": ["64", "65", "66", "67"] },
-            "XIII": { "nome": "Seção XIII - OBRAS DE PEDRA, GESSO, CIMENTO...", "caps": ["68", "69", "70"] },
-            "XIV": { "nome": "Seção XIV - PÉROLAS NATURAIS OU CULTIVADAS, PEDRAS PRECIOSAS...", "caps": ["71"] },
+            "XII": { "nome": "Seção XII - CALÇADO, CHAPÉUS E ARTIGOS DE USO SEMELHANTE, GUARDA-CHUVAS, GUARDA-SÓIS, BENGALAS, CHICOTES, E SUAS PARTES; PENAS PREPARADAS E SUAS OBRAS; FLORES ARTIFICIAIS; OBRAS DE CABELO", "caps": ["64", "65", "66", "67"] },
+            "XIII": { "nome": "Seção XIII - OBRAS DE PEDRA, GESSO, CIMENTO, AMIANTO, MICA OU DE MATÉRIAS SEMELHANTES; PRODUTOS CERÂMICOS; VIDRO E SUAS OBRAS", "caps": ["68", "69", "70"] },
+            "XIV": { "nome": "Seção XIV - PÉROLAS NATURAIS OU CULTIVADAS, PEDRAS PRECIOSAS OU SEMIPRECIOSAS E SEMELHANTES, METAIS PRECIOSOS, METAIS FOLHEADOS OU CHAPEADOS DE METAIS PRECIOSOS (PLAQUÊ), E SUAS OBRAS; BIJUTERIAS; MOEDAS", "caps": ["71"] },
             "XV": { "nome": "Seção XV - METAIS COMUNS E SUAS OBRAS", "caps": ["72", "73", "74", "75", "76", "78", "79", "80", "81", "82", "83"] },
-            "XVI": { "nome": "Seção XVI - MÁQUINAS E APARELHOS, MATERIAL ELÉTRICO...", "caps": ["84", "85"] },
+            "XVI": { "nome": "Seção XVI - MÁQUINAS E APARELHOS, MATERIAL ELÉTRICO, E SUAS PARTES; APARELHOS DE GRAVAÇÃO OU DE REPRODUÇÃO DE SOM, APARELHOS DE GRAVAÇÃO OU DE REPRODUÇÃO DE IMAGENS E DE SOM EM TELEVISÃO, E SUAS PARTES E ACESSÓRIOS", "caps": ["84", "85"] },
             "XVII": { "nome": "Seção XVII - MATERIAL DE TRANSPORTE", "caps": ["86", "87", "88", "89"] },
-            "XVIII": { "nome": "Seção XVIII - INSTRUMENTOS E APARELHOS DE ÓPTICA...", "caps": ["90", "91", "92"] },
-            "XIX": { "nome": "Seção XIX - ARMAS E MUNIÇÕES...", "caps": ["93"] },
+            "XVIII": { "nome": "Seção XVIII - INSTRUMENTOS E APARELHOS DE ÓPTICA, DE FOTOGRAFIA, DE CINEMATOGRAFIA, DE MEDIDA, DE CONTROLE OU DE PRECISÃO; INSTRUMENTOS E APARELHOS MÉDICO-CIRÚRGICOS; ARTIGOS DE RELOJOARIA; INSTRUMENTOS MUSICAIS; SUAS PARTES E ACESSÓRIOS", "caps": ["90", "91", "92"] },
+            "XIX": { "nome": "Seção XIX - ARMAS E MUNIÇÕES; SUAS PARTES E ACESSÓRIOS", "caps": ["93"] },
             "XX": { "nome": "Seção XX - MERCADORIAS E PRODUTOS DIVERSOS", "caps": ["94", "95", "96"] },
             "XXI": { "nome": "Seção XXI - OBJETOS DE ARTE, DE COLEÇÃO E ANTIGUIDADES", "caps": ["97"] }
         };
@@ -1783,7 +1825,7 @@
                 secao.caps.forEach(capId => {
                     const capData = tree[capId];
                     if (capData) {
-                        const capNode = createTreeNode(`${capData.code} - ${capData.desc}`, 1);
+                        const capNode = createTreeNode(`Capítulo ${capData.code} - ${capData.desc}`, 1);
                         buildRecursiveTree(capData.children, capNode.querySelector('.sub-tree'), 2);
                         secaoNode.querySelector('.sub-tree').appendChild(capNode);
                     }
@@ -1799,10 +1841,18 @@
                 const data = children[key];
                 const hasChildren = Object.keys(data.children).length > 0;
                 
-                // Nível 5 é a folha (NCM 8 dígitos)
                 const isLeaf = (level === 5 || !hasChildren); 
                 
-                const node = createTreeNode(`${data.code} - ${data.desc}`, level, isLeaf);
+                // Pega a NCM de 8 dígitos do banco de dados para checar o status
+                const ncmData = ncmDatabase[key.padEnd(8, '0')]; // Preenche com zeros se for < 8
+                let labelText = `${data.code} - ${data.desc}`;
+                
+                // Adiciona status (Expirada) apenas para NCMs de 8 dígitos
+                if (level === 5 && ncmData && ncmData.status === 'expirado') {
+                    labelText += ` (Expirada)`;
+                }
+                
+                const node = createTreeNode(labelText, level, isLeaf);
                 
                 if (hasChildren) {
                     buildRecursiveTree(data.children, node.querySelector('.sub-tree'), level + 1);
@@ -1818,6 +1868,11 @@
             const label = document.createElement('span');
             label.className = 'node-label';
             label.textContent = text;
+            
+            if (level === 5 && text.includes('(Expirada)')) {
+                label.style.color = "var(--color-error-dark)"; // Destaca NCM expirada
+            }
+            
             li.appendChild(label);
             
             if (!isLeaf) {
