@@ -463,114 +463,154 @@
             color: var(--color-warning-dark);
             font-weight: bold;
             margin-top: 2px;
-        }
+         }
         
         
-        /* ESTILOS DA ABA "LIVRO DE NCMs" */
-        #ncmTree {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            overflow-y: auto;
-            border: 1px solid var(--color-border);
-        }
-        
-        /* Nível 0 (Seção) - Estático */
-        .ncm-secao-title {
-            list-style-type: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--color-primary-dark);
-            margin-top: 1.2rem;
-            font-family: var(--font-family); 
-            line-height: 1.4;
-            padding-left: 1.5em;
-            text-indent: -1.5em;
-        }
-        .ncm-secao-title:first-child {
-            margin-top: 0;
-        }
+        /* ========================================================== */
+        /* --- (INÍCIO) CSS DA ABA "LIVRO DE NCMs" (PROJETO 1) --- */
+        /* ========================================================== */
 
-        .tree-node {
-            list-style-type: none;
-            margin-left: 20px;
-            position: relative;
+        #aba-livro .livro-search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        
-        .tree-node .node-label {
+        #aba-livro .livro-search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #aba-livro .livro-search-input:focus { border-color: var(--color-primary); }
+
+        #aba-livro .livro-search-button {
+            padding: 10px 20px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
             cursor: pointer;
-            display: block;
-            padding: 3px 5px;
-            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
             transition: background-color 0.2s;
         }
+        #aba-livro .livro-search-button:hover { background: var(--color-primary-dark); }
         
-        .tree-node .node-label:hover {
-            background-color: var(--color-bg);
+        #aba-livro .livro-expand-controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #aba-livro .livro-expand-btn {
+            padding: 6px 16px;
+            margin: 0 5px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        #aba-livro .livro-expand-btn:hover { background: #5a6268; }
+
+        /* Estilos base para todos os níveis */
+        #aba-livro .ncm-node {
+            margin: 3px 0;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        #aba-livro .ncm-header {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            position: relative;
+            min-height: 32px;
+        }
+        #aba-livro .ncm-header:hover { background-color: rgba(0, 0, 0, 0.05); }
+
+        #aba-livro .codigo {
+            font-weight: bold;
+            min-width: 100px;
+            margin-right: 5px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+            padding-top: 2px;
+        }
+
+        #aba-livro .secao-tracinho {
+            flex-shrink: 0;
+            font-weight: 600;
+            color: #333;
+            padding-top: 2px;
+            font-size: 0.95rem;
+            padding-right: 8px;
         }
         
-        .tree-node .node-label::before {
-            content: '►'; 
-            display: inline-block;
-            width: 1em;
-            margin-left: -1em;
-            font-size: 0.8em;
-            color: var(--color-primary);
-            transition: transform 0.1s ease;
+        #aba-livro .descricao {
+            flex-grow: 1;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.9rem;
+            padding-top: 2px;
+            padding-left: 0;
+            text-indent: 0;
         }
-        
-        .tree-node.expanded > .node-label::before {
-            transform: rotate(90deg); 
-        }
-        
-        .tree-node .sub-tree {
+
+        #aba-livro .children {
+            margin-left: 25px;
+            border-left: 2px dashed #ddd;
+            padding-left: 12px;
             display: none;
         }
-        
-        .tree-node.expanded > .sub-tree {
-            display: block;
+        #aba-livro .children.expanded { display: block; }
+
+        #aba-livro .secao .ncm-header {
+            background-color: #e8eaf6;
+            border-left: 6px solid #3f51b5;
+            font-weight: 600;
         }
-        
-        /* Nível 1 (Capítulo) */
-        .tree-node.level-1 {
-            margin-top: 0.5rem;
+        #aba-livro .secao .codigo { color: #303f9f; font-size: 1rem; }
+        #aba-livro .secao .descricao { font-size: 0.95rem; }
+
+        #aba-livro .capitulo .ncm-header {
+            background-color: #e3f2fd;
+            border-left: 5px solid #2196F3;
         }
-        .tree-node.level-1 > .node-label {
-            font-weight: bold;
-            color: #000;
+        #aba-livro .capitulo .codigo { color: #1976D2; font-size: 0.95rem; margin-right: 20px; }
+        #aba-livro .capitulo .descricao {
+            padding-left: 0;
+            text-indent: 0;
         }
-        
-        /* Nível 2 (Posição) */
-        .tree-node.level-2 > .node-label {
-            color: var(--color-text);
-        }
-        
-        /* Nível 3 (Subposição 1) */
-        .tree-node.level-3 > .node-label {
-            color: var(--color-text-light);
-        }
-        
-        /* Nível 4 (Item) */
-        .tree-node.level-4 > .node-label {
-            color: var(--color-text-light);
-        }
-        
-        /* Nível 5 (Subitem - NCM 8 dígitos) */
-        .tree-node.level-5 {
+
+        #aba-livro .posicao .ncm-header { background-color: #f3e5f5; border-left: 5px solid #9C27B0; }
+        #aba-livro .posicao .codigo { color: #7B1FA2; }
+        #aba-livro .subposicao .ncm-header { background-color: #fff3e0; border-left: 5px solid #FF9800; }
+        #aba-livro .subposicao .codigo { color: #F57C00; }
+        #aba-livro .item .ncm-header { background-color: #e8f5e9; border-left: 5px solid #4CAF50; }
+        #aba-livro .item .codigo { color: #388E3C; }
+        #aba-livro .subitem .ncm-header { background-color: #c8e6c9; border-left: 5px solid #2e7d32; }
+        #aba-livro .subitem .codigo { color: #1b5e20; }
+        #aba-livro .no-children { opacity: 0.8; }
+        #aba-livro .no-children .ncm-header { cursor: default; }
+        #aba-livro .highlight {
+            background-color: #ffeb3b !important;
+            padding: 2px 4px;
+            border-radius: 2px;
             color: #333;
         }
-        .tree-node.level-5 > .node-label {
-            cursor: default;
-        }
-        .tree-node.level-5 > .node-label::before {
-            content: '•';
-            font-size: 0.6em;
-            vertical-align: middle;
-            position: static; 
-            transform: none;
-        }
+        
+        /* ========================================================== */
+        /* --- (FIM) CSS DA ABA "LIVRO DE NCMs" --- */
+        /* ========================================================== */
 
 
         #toastContainer {
@@ -795,25 +835,24 @@
                 <div class="card result-card vigente hidden" id="vigenteCard">
                     <h3><span>Vigentes - (<span id="vigenteCount">0</span>)</span></h3>
                     <div id="vigenteList" class="result-list">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="card result-card expirado hidden" id="expiradoCard">
                     <h3><span>Expiradas - (<span id="expiradoCount">0</span>)</span></h3>
                     <div id="expiradoList" class="result-list">
-                        </div>
+                    </div>
                 </div>
                 
                 <div class="card result-card nao-vigente hidden" id="invalidoCard">
                     <h3><span>Inválidas - (<span id="invalidoCount">0</span>)</span></h3>
                     <div id="invalidoList" class="result-list">
-                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         
         <div id="aba-comparador" class="tab-content hidden">
-            
             <div class="card">
                 <h2>1. Cole suas NCMs para Comparar</h2>
                 
@@ -885,14 +924,25 @@
         
         <div id="aba-livro" class="tab-content hidden">
             <div class="card">
-                <h2>Estrutura Hierárquica da NCM</h2>
-                <p style="color: var(--color-text-light); font-size: 0.9rem; margin-top: 0; margin-bottom: 1rem;">Clique nos itens para expandir e navegar pela árvore.</p>
-                <ul id="ncmTree">
-                    </ul>
+                <div class="livro-search-container">
+                    <input type="text" class="livro-search-input" id="livroSearchInput" placeholder="Buscar por código ou descrição...">
+                    <button class="livro-search-button" id="livroSearchBtn">Buscar</button>
+                </div>
+        
+                <div class="livro-expand-controls">
+                    <button class="livro-expand-btn" id="livroExpandSecoesBtn">Expandir Seções</button>
+                    <button class="livro-expand-btn" id="livroCollapseBtn">Recolher Tudo</button>
+                </div>
+        
+                <div id="livroTreeContainer">
+                    <p>Carregando árvore NCM...</p>
+                </div>
             </div>
         </div>
-
-    </div> <div class="page-footer">
+        
+        </div> 
+    
+    <div class="page-footer">
         <a href="#" id="updateLink" title="Acesso do Administrador">Atualizar Base de Dados</a>
         <p id="copyrightInfo">&copy; 2025. Design by <span class="overline-md">MD</span>.</p>
     </div>
@@ -948,7 +998,7 @@
     <script>
         // Objeto global para armazenar os dados da NCM
         let ncmDatabase = {};
-        // NOVO: Mapa para a árvore (Chave: codeRaw, Valor: { desc, code, children: [codeRaw, ...] })
+        // Mapa para a árvore (Chave: codeRaw, Valor: { desc, code, children: [array de OBJETOS] })
         let ncmTreeMap = new Map();
         
         let lastVigentes = [];
@@ -956,8 +1006,12 @@
 
         const CSV_FILE = 'Tabela_NCM_Vigente.csv';
         
-        // Flag para a Aba 3
-        let isTreeRendered = false;
+        // --- (NOVO!) Variáveis para a ABA 3 (LIVRO NCM) ---
+        let isLivroNcmBuilt = false; // Flag para construir a árvore só uma vez
+        let livroNcmData = []; // Array hierárquico para a nossa árvore
+        let livroTreeContainer = null;
+        let livroSearchInput = null;
+        // --- FIM DAS NOVAS VARIÁVEIS ---
 
         // --- Seleção de Elementos DOM ---
         
@@ -973,7 +1027,9 @@
         const abaVerificador = document.getElementById('aba-verificador');
         const abaComparador = document.getElementById('aba-comparador');
         const abaLivro = document.getElementById('aba-livro'); 
-        const ncmTreeContainer = document.getElementById('ncmTree'); 
+        
+        // --- (NOVO!) Elementos da ABA 3 (LIVRO NCM) ---
+        // (Serão atribuídos no DOMContentLoaded)
 
         // --- ABA 1: VERIFICADOR ---
         const ncmInput = document.getElementById('ncmInput');
@@ -1080,7 +1136,8 @@
 
         confirmPasswordBtn.addEventListener('click', () => {
             const pass = passwordInput.value;
-            if (pass === 'atualizarbasededados') {
+            // SENHA SIMPLES - MUDAR SE QUISER
+            if (pass === '1234') { 
                 passwordModal.classList.add('hidden');
                 instructionsModal.classList.remove('hidden');
             } else {
@@ -1093,7 +1150,7 @@
         
         passwordInput.addEventListener('keyup', (e) => {
              if (e.key === 'Enter') {
-                confirmPasswordBtn.click();
+                 confirmPasswordBtn.click();
              }
         });
 
@@ -1102,7 +1159,20 @@
 
 
         // --- Event Listeners Principais ---
-        document.addEventListener('DOMContentLoaded', loadData);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Atribui os elementos da Aba 3 aqui
+            livroTreeContainer = document.getElementById('livroTreeContainer');
+            livroSearchInput = document.getElementById('livroSearchInput');
+            
+            // Conecta os botões da Aba 3
+            document.getElementById('livroSearchBtn').addEventListener('click', searchNCM_Livro);
+            // (MUDANÇA!) Conecta o novo botão/função
+            document.getElementById('livroExpandSecoesBtn').addEventListener('click', expandSecoes_Livro);
+            document.getElementById('livroCollapseBtn').addEventListener('click', collapseAll_Livro);
+            
+            // Inicia o carregamento dos dados
+            loadData();
+        });
         
         // --- LÓGICA DAS ABAS ---
         tabBtnVerificador.addEventListener('click', () => switchTab('verificador'));
@@ -1128,12 +1198,15 @@
                 abaLivro.classList.remove('hidden');
                 tabBtnLivro.classList.add('active');
                 
-                // --- "LAZY LOAD" DA ÁRVORE ---
-                if (!isTreeRendered && ncmTreeMap.size > 0) {
-                    showToast("Renderizando árvore hierárquica...", "info");
+                // --- (NOVO!) "LAZY LOAD" DA NOSSA ÁRVORE ---
+                // Se a árvore principal (do CSV) foi carregada E
+                // a nossa árvore (do livro) ainda não foi construída...
+                if (!isLivroNcmBuilt && ncmTreeMap.size > 0) {
+                    showToast("Construindo árvore hierárquica...", "info");
                     setTimeout(() => {
-                        renderNCMTreeSecoes(ncmTreeContainer); // Renderiza só as seções
-                        isTreeRendered = true;
+                        buildLivroData(); // Constrói a árvore de dados
+                        collapseAll_Livro(); // Renderiza ela colapsada
+                        isLivroNcmBuilt = true;
                     }, 50); 
                 }
             }
@@ -1156,26 +1229,8 @@
         copyCompareNaoVigenteG1Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG1Text, "Lista de NCMs não vigentes (G1) copiada!"));
         copyCompareNaoVigenteG2Btn.addEventListener('click', () => copyCompareList(compareNaoVigenteG2Text, "Lista de NCMs não vigentes (G2) copiada!"));
         
-        // --- Listeners ABA 3: LIVRO DA NCMs ---
-        ncmTreeContainer.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('node-label')) {
-                const parentNode = e.target.closest('.tree-node');
-                if (parentNode) {
-                    
-                    if (!parentNode.dataset.populated) {
-                        const [level, code] = (parentNode.dataset.id || "").split('-');
-                        if (level === "0") { // Clicou na Seção
-                            populateCapitulos(parentNode, secoesNCM[code].caps);
-                        } else { // Clicou no Capítulo ou Nível > 1
-                            populateChildren(parentNode, code);
-                        }
-                        parentNode.dataset.populated = "true";
-                    }
-                    
-                    parentNode.classList.toggle('expanded');
-                }
-            }
-        });
+        // --- (REMOVIDO!) Listeners ABA 3: LIVRO DA NCMs ---
+        // (A lógica de clique agora está em renderNCM_Livro)
 
 
         /**
@@ -1212,7 +1267,7 @@
                                 headerLineIndex = i;
                                 break;
                             }
-                        }
+                         }
                     }
 
                     if(headerLineIndex === -1) return null;
@@ -1251,7 +1306,7 @@
                 const { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator } = parsedData;
 
                 const newDatabase = {};
-                const newTreeMap = new Map();
+                const newTreeMap = new Map(); // Mapa temporário
                 let vigentesCount = 0; 
                 let dataDeAtualizacao = "";
                 
@@ -1318,17 +1373,22 @@
                     }
                     
                     // Adiciona TODOS os nós ao mapa, usando codeRaw como chave
-                    if (codeRaw) {
-                         newTreeMap.set(codeRaw, { desc: desc, code: codeRaw, children: [] });
+                    if (codeRaw && !newTreeMap.has(codeRaw)) {
+                         newTreeMap.set(codeRaw, { 
+                            desc: desc, 
+                            code: codeRaw, 
+                            children: [] // Será populado no Loop 2
+                         });
                     }
                 }
                 
                 // Loop 2: Ligar os nós da árvore
                 newTreeMap.forEach((node, codeRaw) => {
-                    const parentKey = findParentKey(codeRaw);
+                    const parentKey = findParentKey_Corrigido(codeRaw, newTreeMap); // <-- (CORREÇÃO!)
                     if (parentKey) {
                         const parentNode = newTreeMap.get(parentKey);
                         if (parentNode) {
+                            // Adiciona o OBJETO filho (não só a chave)
                             parentNode.children.push(node);
                         }
                     }
@@ -1342,9 +1402,8 @@
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
                 
-                // 4. Renderiza APENAS AS SEÇÕES (Lazy Load)
-                renderNCMTreeSecoes(ncmTreeContainer);
-
+                // (REMOVIDO!) Não renderiza mais a árvore antiga
+                
                 // 5. Atualiza a UI
                 if(dataDeAtualizacao) {
                      const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
@@ -1352,7 +1411,7 @@
                         const [_, day, month, year] = dateMatch;
                         dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
                     } else {
-                         dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
+                        dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
                     }
                 } else {
                     dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
@@ -1456,8 +1515,8 @@
                 vigenteCount.textContent = vigentes.length;
                 vigenteCard.classList.remove('hidden');
                 vigenteListText.value = [...vigentes].sort((a, b) => a.code.localeCompare(b.code))
-                                                    .map(item => formatNCM(item.code))
-                                                    .join(', '); 
+                                             .map(item => formatNCM(item.code))
+                                             .join(', '); 
                 vigenteCopyBox.classList.remove('hidden');
             } else {
                 vigenteCard.classList.add('hidden');
@@ -1590,7 +1649,7 @@
             
             if (setG1.size === 0 || setG2.size === 0) {
                  showToast("Nenhum NCM válido encontrado em um dos grupos.", "warn");
-                return;
+                 return;
             }
             
             g1InputCount.textContent = `- (${setG1.size} NCMs)`;
@@ -1743,91 +1802,11 @@
                 compareNaoVigenteG2Text.placeholder = 'Nenhuma NCM não vigente para o Grupo 2.';
             }
         }
-        
-        function getPluralText(count, singularText, pluralText) {
-            const text = count === 1 ? singularText : pluralText;
-            return `${text} - (${count})`;
-        }
-        
-        function copyCompareList(textareaElement, successMessage) {
-            const textToCopy = textareaElement.value;
-            if (textToCopy) {
-                copyToClipboard(textToCopy, successMessage);
-            } else {
-                showToast("Não há NCMs para copiar.", "warn");
-            }
-        }
-        
+
         // ==========================================================
-        // FUNÇÕES: ABA 3 (LIVRO DE NCMs)
+        // FUNÇÕES: ABA 3 (LIVRO DE NCMs) - LÓGICA DO PROJETO 1
         // ==========================================================
 
-        /**
-         * Encontra a chave do "pai" de um nó da árvore
-         */
-        function findParentKey(codeRaw) {
-            // Se for um Capítulo (ex: "01"), não tem pai (na nossa árvore)
-            if (codeRaw.length === 2 && !codeRaw.includes('.')) return null;
-
-            let parts = codeRaw.split('.');
-            
-            // Se tiver 4 partes (ex: 0104.10.1.1), o pai é 0104.10.1
-            if (parts.length === 4) return parts.slice(0, 3).join('.');
-            
-            // Se tiver 3 partes (ex: 0104.10.1), o pai é 0104.10
-            if (parts.length === 3) return parts.slice(0, 2).join('.');
-            
-            // Se tiver 2 partes (ex: 01.04 ou 0104.10)
-            if (parts.length === 2) {
-                // Se for Posição (ex: "01.04"), o pai é o Capítulo ("01")
-                if (codeRaw.length === 5) return parts[0];
-                
-                // Se for Subposição (ex: "0104.10"), o pai é a Posição ("01.04")
-                if (codeRaw.length === 7) return `${parts[0].substring(0, 2)}.${parts[0].substring(2, 4)}`;
-                
-                // Se for Subposição (ex: "0101.2"), o pai é a Posição ("01.01")
-                if (codeRaw.length === 6) return `${parts[0].substring(0, 2)}.${parts[0].substring(2, 4)}`;
-            }
-            
-            // Se for Subposição (ex: 0101.21), o pai é 0101.2
-            if (codeRaw.length === 7 && parts.length === 2) {
-                 return `${parts[0]}.${parts[1].substring(0, 1)}`;
-            }
-            
-            return null; // Nível 1 (Capítulo)
-        }
-
-        /**
-         * Constrói o mapa da árvore
-         */
-        function buildTree(treeMap, codeRaw, desc) {
-            if (!codeRaw || !desc) return;
-            
-            // Adiciona o nó ao mapa
-            if (!treeMap.has(codeRaw)) {
-                treeMap.set(codeRaw, { desc: desc, code: codeRaw, children: [] });
-            } else {
-                // Atualiza a descrição caso a linha atual seja mais específica
-                // (Evita que "01" tenha a descrição "...")
-                treeMap.get(codeRaw).desc = desc;
-            }
-        }
-        
-        /**
-         * Conecta os nós da árvore (Passo 2 do loadData)
-         */
-        function linkTree(treeMap) {
-            treeMap.forEach((node, codeRaw) => {
-                const parentKey = findParentKey(codeRaw);
-                if (parentKey) {
-                    const parentNode = treeMap.get(parentKey);
-                    if (parentNode) {
-                        parentNode.children.push(node);
-                    }
-                }
-            });
-        }
-        
         const secoesNCM = {
             "I": { "nome": "Seção I - ANIMAIS VIVOS E PRODUTOS DO REINO ANIMAL", "caps": ["01", "02", "03", "04", "05"] },
             "II": { "nome": "Seção II - PRODUTOS DO REINO VEGETAL", "caps": ["06", "07", "08", "09", "10", "11", "12", "13", "14"] },
@@ -1852,117 +1831,275 @@
             "XXI": { "nome": "Seção XXI - OBJETOS DE ARTE, DE COLEÇÃO E ANTIGUIDADES", "caps": ["97"] }
         };
 
-        // Renderiza APENAS as Seções
-        function renderNCMTreeSecoes(container) {
-            container.innerHTML = ''; 
+        /**
+         * (NOVO!) Constrói nosso array 'livroNcmData' a partir do 'ncmTreeMap' 
+         */
+        function buildLivroData() {
+            livroNcmData = []; 
             
             for (const secaoId in secoesNCM) {
                 const secao = secoesNCM[secaoId];
-                // Cria o nó da Seção (Clicável)
-                const secaoNode = createTreeNode(secao.nome, 0, false); // Nível 0, Não é folha
-                secaoNode.dataset.id = `0-${secaoId}`; // Armazena o ID da Seção
-                container.appendChild(secaoNode);
-            }
-        }
-        
-        // Popula os Capítulos de uma Seção
-        function populateCapitulos(secaoNode, capIds) {
-            const subTreeContainer = secaoNode.querySelector('.sub-tree');
-            if (!subTreeContainer) return;
+                
+                const secaoNode = {
+                    codigo: secaoId,
+                    descricao: secao.nome.split(' - ')[1],
+                    nivel: 'secao',
+                    children: [],
+                    childrenLoaded: false,
+                    hasChildren: true
+                };
 
-            capIds.forEach(capId => {
-                const capData = ncmTreeMap.get(capId); // Pega o Capítulo do mapa
-                if (capData) {
-                    const hasChildren = capData.children.length > 0;
-                    const capNode = createTreeNode(`Capítulo ${capData.code} - ${capData.desc}`, 1, !hasChildren);
-                    if (hasChildren) {
-                        capNode.dataset.id = `1-${capData.code}`; // Armazena o CÓDIGO RAW
+                secao.caps.forEach(capId => {
+                    const capData = ncmTreeMap.get(capId);
+                    if (capData) {
+                        const capNode = adaptNodeFromMap(capData, 'capitulo');
+                        secaoNode.children.push(capNode);
                     }
-                    subTreeContainer.appendChild(capNode);
-                }
-            });
+                });
+                
+                livroNcmData.push(secaoNode);
+            }
         }
         
-        // Popula os filhos de qualquer nó (Capítulo, Posição, etc.)
-        function populateChildren(parentNode, code) {
-            const subTreeContainer = parentNode.querySelector('.sub-tree');
-            if (!subTreeContainer) return;
+        /**
+         * (NOVO!) Função recursiva que adapta os nós do 'ncmTreeMap'
+         */
+        function adaptNodeFromMap(mapNode, nivel) {
+            const hasChildren = mapNode.children && mapNode.children.length > 0;
+            
+            let nivelClass = nivel;
+            if (nivel !== 'capitulo') {
+                 if (mapNode.code.length === 5) nivelClass = 'posicao';
+                 else if (mapNode.code.length === 6) nivelClass = 'subposicao'; // 0101.2
+                 else if (mapNode.code.length === 7) nivelClass = 'subposicao'; // 0101.21
+                 else if (mapNode.code.length === 10) nivelClass = 'item';
+            }
 
-            const nodeData = ncmTreeMap.get(code); // Pega o nó atual pelo CÓDIGO RAW
-            if (!nodeData || !nodeData.children) return;
+            const newNode = {
+                codigo: mapNode.code,
+                descricao: mapNode.desc,
+                nivel: nivelClass,
+                children: [],
+                childrenLoaded: false,
+                hasChildren: hasChildren
+            };
 
-            const childrenData = nodeData.children;
-            const nextLevel = 2; // Nível não importa mais, apenas a hierarquia
-            
-            childrenData.sort((a,b) => a.code.localeCompare(b.code)); // Ordena os filhos pelo código
-            
-            childrenData.forEach(data => {
-                const hasChildren = data.children.length > 0;
-                const isLeaf = !hasChildren; 
+            if (hasChildren) {
+                mapNode.children.sort((a,b) => a.code.localeCompare(b.code));
                 
-                let ncmData = null;
-                const cleanCode = data.code.replace(/\D/g, '');
-                if (cleanCode.length === 8) { 
-                    ncmData = ncmDatabase[cleanCode];
-                }
-                
-                let labelText = `${data.code} - ${data.desc}`;
-                
-                if (ncmData && ncmData.status === 'expirado') {
-                    labelText += ` (Expirada)`;
-                }
-                
-                const node = createTreeNode(labelText, nextLevel, isLeaf);
-                if (!isLeaf) {
-                    node.dataset.id = `${nextLevel}-${data.code}`; // Armazena o CÓDIGO RAW
-                }
-                subTreeContainer.appendChild(node);
-            });
-        }
-        
-        function createTreeNode(text, level, isLeaf = false) {
-            const li = document.createElement('li');
-            li.className = `tree-node level-${level}`;
-            
-            const label = document.createElement('span');
-            label.className = 'node-label';
-            label.textContent = text;
-            
-            // Adiciona cor de expirada para NCMs de 8 dígitos
-            const cleanCode = text.replace(/\D/g, '');
-            if (cleanCode.length === 8 && text.includes('(Expirada)')) {
-                label.style.color = "var(--color-warning-dark)"; 
+                newNode.children = mapNode.children.map(childMapNode => {
+                    return adaptNodeFromMap(childMapNode, 'posicao');
+                });
             }
             
-            li.appendChild(label);
-            
-            if (!isLeaf) {
-                const subTree = document.createElement('ul');
-                subTree.className = 'sub-tree';
-                li.appendChild(subTree);
-            }
-            return li;
+            return newNode;
         }
 
+        /**
+         * (NOVO!) Renderiza a árvore do Livro (baseado na função do Projeto 1)
+         * (MUDANÇA!) Aceita "expandDepth" para controlar a expansão
+         */
+        function renderNCM_Livro(nodes, parentElement, expandDepth = 0) {
+            if (!nodes || nodes.length === 0) return;
+
+            for (const node of nodes) {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = `ncm-node ${node.nivel}`;
+                const headerElement = document.createElement('div');
+                headerElement.className = 'ncm-header';
+
+                let codigoDisplay = node.codigo;
+                let descricaoDisplay = node.descricao;
+                let tracinhoHTML = ''; 
+
+                if (node.nivel === 'secao') {
+                    codigoDisplay = `Seção ${node.codigo}`;
+                    tracinhoHTML = '<span class="secao-tracinho">-</span>'; 
+                } else if (node.nivel === 'capitulo') {
+                    codigoDisplay = `Capítulo ${node.codigo}`;
+                }
+                
+                headerElement.innerHTML = `
+                    <span class="codigo">${codigoDisplay}</span>
+                    ${tracinhoHTML} 
+                    <span class="descricao">${descricaoDisplay}</span>
+                `;
+
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children';
+                nodeElement.appendChild(headerElement);
+                nodeElement.appendChild(childrenContainer);
+                parentElement.appendChild(nodeElement);
+
+                if (node.hasChildren) {
+                    headerElement.style.cursor = 'pointer';
+                    
+                    // (MUDANÇA!) Lógica de expansão baseada na profundidade
+                    if (expandDepth > 0) { 
+                        childrenContainer.classList.add('expanded');
+                        // Renderiza filhos, diminuindo a profundidade
+                        renderNCM_Livro(node.children, childrenContainer, expandDepth - 1); 
+                        node.childrenLoaded = true;
+                    }
+                    
+                    headerElement.addEventListener('click', () => {
+                        const isExpanded = childrenContainer.classList.toggle('expanded');
+                        
+                        if (isExpanded && !node.childrenLoaded) { 
+                            renderNCM_Livro(node.children, childrenContainer, 0); // Ao clicar, renderiza colapsado
+                            node.childrenLoaded = true;
+                        }
+                    });
+                } else {
+                    nodeElement.classList.add('no-children');
+                }
+            }
+        }
         
+        /**
+         * (NOVO!) Funções de controle para a árvore do Livro
+         */
+        function searchNCM_Livro() {
+            if (!livroSearchInput || !livroTreeContainer) return; 
+            const query = livroSearchInput.value;
+            livroTreeContainer.innerHTML = ''; 
+
+            if (!query) {
+                collapseAll_Livro(); 
+                return;
+            }
+            const searchResults = searchTree_Livro(livroNcmData, query);
+
+            if (searchResults.length === 0) {
+                livroTreeContainer.innerHTML = '<p style="padding: 20px;">Nenhum resultado encontrado.</p>';
+            } else {
+                // (MUDANÇA!) Expande todos os resultados da busca (profundidade 99)
+                renderNCM_Livro(searchResults, livroTreeContainer, 99); 
+                highlightQuery_Livro(query);
+            }
+        }
+
+        // (MUDANÇA!) Esta função agora expande SÓ as Seções
+        function expandSecoes_Livro() {
+            if (!livroTreeContainer) return;
+            resetChildrenLoaded_Livro(livroNcmData); 
+            livroTreeContainer.innerHTML = '';
+            // (MUDANÇA!) Renderiza com profundidade 1 (expande 1 nível)
+            renderNCM_Livro(livroNcmData, livroTreeContainer, 1);
+        }
+
+        function collapseAll_Livro() {
+            if (!livroTreeContainer) return;
+            resetChildrenLoaded_Livro(livroNcmData); 
+            livroTreeContainer.innerHTML = '';
+            // (MUDANÇA!) Renderiza com profundidade 0 (colapsado)
+            renderNCM_Livro(livroNcmData, livroTreeContainer, 0);
+        }
+        
+        function resetChildrenLoaded_Livro(nodes) {
+            if (!nodes) return;
+            for (const node of nodes) {
+                node.childrenLoaded = false;
+                if (node.hasChildren) {
+                    resetChildrenLoaded_Livro(node.children);
+                }
+            }
+        }
+        
+        function searchTree_Livro(nodes, query) {
+            let results = [];
+            const queryLower = query.toLowerCase();
+            for (const node of nodes) {
+                const nodeMatches = node.codigo.toLowerCase().includes(queryLower) || 
+                                    node.descricao.toLowerCase().includes(queryLower);
+                let matchedChildren = [];
+                if (node.hasChildren) {
+                    matchedChildren = searchTree_Livro(node.children, query);
+                }
+                if (nodeMatches || matchedChildren.length > 0) {
+                    const newNode = { ...node };
+                    newNode.children = matchedChildren;
+                    results.push(newNode);
+                }
+            }
+            return results;
+        }
+
+        function highlightQuery_Livro(query) {
+            if (!query) return;
+            const regex = new RegExp(`(${query})`, 'gi');
+            const elements = livroTreeContainer.querySelectorAll('.descricao, .codigo');
+            elements.forEach(el => {
+                const text = el.textContent;
+                el.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
+            });
+        }
+
         // ==========================================================
         // FUNÇÕES UTILITÁRIAS (COMPARTILHADAS)
         // ==========================================================
         
-        function getPluralText(count, singularText, pluralText) {
-            const text = count === 1 ? singularText : pluralText;
-            return `${text} - (${count})`;
+        /**
+         * (CORRIGIDO!) Encontra a chave do "pai" de um nó da árvore (usado pelo loadData)
+         */
+        function findParentKey_Corrigido(codeRaw, treeMap) {
+            // Nível 1 (Capítulo - 01) -> não tem pai
+            if (codeRaw.length === 2 && !codeRaw.includes('.')) return null;
+
+            // Nível 2 (Posição - 01.01) -> Pai é Nível 1 (01)
+            if (codeRaw.length === 5 && codeRaw.includes('.')) {
+                return codeRaw.substring(0, 2); // 01
+            }
+
+            // Nível 3 (Subposição - 0101.2) -> Pai é Nível 2 (01.01)
+            if (codeRaw.length === 6 && codeRaw.includes('.')) {
+                return `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.01
+            }
+            
+            // Nível 3 (Subposição - 0104.10) -> Pai é Nível 2 (01.04)
+            if (codeRaw.length === 7 && /^\d{4}\.\d{2}$/.test(codeRaw)) {
+                 return `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.04
+            }
+            
+            // Nível 3.5 (Subposição - 0101.21) -> Pai é Nível 3 (0101.2)
+            if (codeRaw.length === 7 && /^\d{4}\.\d{2}$/.test(codeRaw) === false) { 
+                 let parentTry = `${codeRaw.substring(0, 4)}.${codeRaw.substring(5, 6)}`; // 0101.2
+                 if (treeMap.has(parentTry)) return parentTry;
+            }
+
+            // Nível 4 (Item - 0101.21.00 ou 0209.10.11)
+            if (codeRaw.length === 10 && codeRaw.split('.').length === 3) {
+                let parts = codeRaw.split('.'); // [0209, 10, 11]
+                
+                // --- ESTA É A NOVA LÓGICA ---
+                // Tenta pai (ex: 0209.10.1)
+                let parentTry = `${parts[0]}.${parts[1]}.${parts[2].substring(0, 1)}`;
+                if (treeMap.has(parentTry)) return parentTry;
+
+                // Tenta pai (ex: 0101.21)
+                parentTry = `${parts[0]}.${parts[1]}`;
+                if (treeMap.has(parentTry)) return parentTry;
+                
+                // Tenta pai (ex: 0101.2)
+                parentTry = `${parts[0]}.${parts[1].substring(0, 1)}`;
+                if (treeMap.has(parentTry)) return parentTry;
+                
+                // Tenta pai (ex: 01.01)
+                parentTry = `${parts[0].substring(0,2)}.${parts[0].substring(2,4)}`;
+                if (treeMap.has(parentTry)) return parentTry;
+            }
+            
+            // Fallback genérico (tentativa final)
+            // Para casos como 0209.10.1 -> 0209.10
+            if (codeRaw.includes('.')) {
+                let lastDot = codeRaw.lastIndexOf('.');
+                let parentTry = codeRaw.substring(0, lastDot);
+                if (treeMap.has(parentTry)) return parentTry;
+            }
+
+            return null; // Não encontrou
         }
         
-        function copyCompareList(textareaElement, successMessage) {
-            const textToCopy = textareaElement.value;
-            if (textToCopy) {
-                copyToClipboard(textToCopy, successMessage);
-            } else {
-                showToast("Não há NCMs para copiar.", "warn");
-            }
-        }
-
         function extractNcms(text) {
              const cleanedText = text.replace(/[^0-9\n\r,; ]/g, '');
             const potentialNcms = cleanedText.split(/[\n\r,; ]+/);
