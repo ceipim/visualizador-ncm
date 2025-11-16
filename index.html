@@ -1239,7 +1239,10 @@
             const cacheBuster = new Date().getTime(); 
             const fileToFetch = `${CSV_FILE}?v=${cacheBuster}`;
 
-            let csvText;
+            let newDatabase = {};
+            let newTreeMap = new Map();
+            let vigentesCount = 0; 
+            let dataDeAtualizacao = "";
             let encodingUsed;
 
             try {
@@ -1286,7 +1289,7 @@
                 
                 // Tenta UTF-8
                 let decoder = new TextDecoder('utf-8');
-                csvText = decoder.decode(buffer);
+                let csvText = decoder.decode(buffer);
                 encodingUsed = 'UTF-8';
                 let parsedData = findHeaders(csvText);
                 
@@ -1303,11 +1306,6 @@
                 }
                 
                 const { lines, headerLineIndex, headers, idxCodigo, idxDesc, idxDataFim, separator } = parsedData;
-
-                const newDatabase = {};
-                const newTreeMap = new Map(); // Mapa temporário
-                let vigentesCount = 0; 
-                let dataDeAtualizacao = "";
                 
                 const dataAtualizacaoMatch = lines[1].match(/(\d{2}\/\d{2}\/\d{4})/);
                 if (dataAtualizacaoMatch) {
@@ -1340,7 +1338,7 @@
                     return values.map(v => v.trim());
                 };
 
-                // (CORREÇÃO!) Loop 1: Popula APENAS o ncmDatabase (Aba 1 e 2)
+                // (CORREÇÃO!) Loop 1: Popula newDatabase E newTreeMap
                 for (let i = headerLineIndex + 1; i < lines.length; i++) {
                     if (!lines[i]) continue;
                     const values = parseCsvLine(lines[i], separator);
@@ -1348,9 +1346,10 @@
                     
                     const codeRaw = values[idxCodigo];
                     const code = codeRaw.replace(/\D/g, ''); 
+                    const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
                     
+                    // Lógica do ncmDatabase (Abas 1 e 2)
                     if (code.length === 8) {
-                        const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
                         const dataFim = values[idxDataFim];
                         let status = 'expirado';
                         let endInfo = '';
@@ -1368,17 +1367,8 @@
                             endInfo: endInfo
                         };
                     }
-                }
-                
-                // (CORREÇÃO!) Loop 2: Popula o ncmTreeMap (Aba 3)
-                for (let i = headerLineIndex + 1; i < lines.length; i++) {
-                    if (!lines[i]) continue;
-                    const values = parseCsvLine(lines[i], separator);
-                    if (values.length < headers.length) continue; 
-                    
-                    const codeRaw = values[idxCodigo];
-                    const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
-                    
+
+                    // Lógica do ncmTreeMap (Aba 3)
                     if (codeRaw && !newTreeMap.has(codeRaw)) {
                          newTreeMap.set(codeRaw, { 
                             desc: desc, 
@@ -1387,8 +1377,26 @@
                          });
                     }
                 }
+                
+                // (CORREÇÃO!) Atribui os dados brutos. Abas 1 e 2 JÁ FUNCIONAM.
+                ncmDatabase = newDatabase;
+                ncmTreeMap = newTreeMap;
 
-                // (CORREÇÃO!) Loop 3: Liga os nós da árvore
+                if (Object.keys(ncmDatabase).length === 0) {
+                    throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
+                }
+
+            } catch (error) {
+                console.error('Erro ao LER o arquivo CSV:', error);
+                dataSourceInfo.textContent = `Erro ao carregar ${CSV_FILE}. Verifique o console (F12).`;
+                showToast(`ERRO: ${error.message}. Verifique o console (F12).`, 'error');
+                return; // Sai da função
+            }
+
+            // --- SE CHEGOU AQUI, a leitura foi um SUCESSO ---
+
+            // (CORREÇÃO!) Bloco 2: Ligar a Árvore (Aba 3)
+            try {
                 newTreeMap.forEach((node, codeRaw) => {
                     const parentKey = findParentKey_Robust(codeRaw, newTreeMap); // <-- (CORREÇÃO!)
                     if (parentKey) {
@@ -1398,44 +1406,29 @@
                         }
                     }
                 });
-
-                
-                ncmDatabase = newDatabase; 
-                ncmTreeMap = newTreeMap; // Armazena o mapa
-
-                if (Object.keys(ncmDatabase).length === 0) {
-                    throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
-                }
-                
-                // 5. Atualiza a UI
-                if(dataDeAtualizacao) {
-                     const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                    if (dateMatch) {
-                        const [_, day, month, year] = dateMatch;
-                        dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
-                    } else {
-                        dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
-                    }
-                } else {
-                    dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
-                }
-                
-                if (databaseStatsInfo) {
-                    databaseStatsInfo.textContent = `Total de ${vigentesCount.toLocaleString('pt-BR')} NCMs vigentes na base.`;
-                }
-
-                showToast(`Base de dados NCM (CSV) carregada! (Codificação: ${encodingUsed})`, 'success');
-
-            } catch (error) {
-                console.error('Erro ao carregar o arquivo CSV:', error);
-                dataSourceInfo.textContent = `Erro ao carregar ${CSV_FILE}. Verifique o console (F12).`;
-                
-                if(databaseStatsInfo) {
-                    databaseStatsInfo.classList.add('hidden');
-                }
-                
-                showToast(`ERRO: ${error.message}. Verifique o console (F12).`, 'error');
+            } catch (linkError) {
+                 console.error('Erro ao LIGAR A ÁRVORE (Aba 3):', linkError);
+                 showToast("Erro ao construir a árvore NCM (Aba 3).", "warn");
             }
+
+            // (CORREÇÃO!) Bloco 3: Atualiza a UI (sempre)
+            if(dataDeAtualizacao) {
+                 const dateMatch = dataDeAtualizacao.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                if (dateMatch) {
+                    const [_, day, month, year] = dateMatch;
+                    dataSourceInfo.textContent = `Base de Dados: Tabela_NCM_Vigente_${year}${month}${day}.csv`;
+                } else {
+                    dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE} (Vigente em ${dataDeAtualizacao})`;
+                }
+            } else {
+                dataSourceInfo.textContent = `Base de Dados: ${CSV_FILE}`;
+            }
+            
+            if (databaseStatsInfo) {
+                databaseStatsInfo.textContent = `Total de ${vigentesCount.toLocaleString('pt-BR')} NCMs vigentes na base.`;
+            }
+
+            showToast(`Base de dados NCM (CSV) carregada! (Codificação: ${encodingUsed})`, 'success');
         }
         
         
@@ -2085,6 +2078,12 @@
                 }
             }
             
+            // Fallback para casos não cobertos
+             if (codeRaw.length > 5 && codeRaw.includes('.')) {
+                 let parentTry = `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.01
+                 if (treeMap.has(parentTry)) return parentTry;
+             }
+
             return null; // Não encontrou
         }
         
