@@ -1166,7 +1166,6 @@
             
             // Conecta os botões da Aba 3
             document.getElementById('livroSearchBtn').addEventListener('click', searchNCM_Livro);
-            // (MUDANÇA!) Conecta o novo botão/função
             document.getElementById('livroExpandSecoesBtn').addEventListener('click', expandSecoes_Livro);
             document.getElementById('livroCollapseBtn').addEventListener('click', collapseAll_Livro);
             
@@ -1391,7 +1390,7 @@
 
                 // (CORREÇÃO!) Loop 3: Liga os nós da árvore
                 newTreeMap.forEach((node, codeRaw) => {
-                    const parentKey = findParentKey_Corrigido(codeRaw, newTreeMap);
+                    const parentKey = findParentKey_Robust(codeRaw, newTreeMap); // <-- (CORREÇÃO!)
                     if (parentKey) {
                         const parentNode = newTreeMap.get(parentKey);
                         if (parentNode) {
@@ -1876,7 +1875,7 @@
                  if (mapNode.code.length === 5) nivelClass = 'posicao';
                  else if (mapNode.code.length === 6) nivelClass = 'subposicao'; // 0101.2
                  else if (mapNode.code.length === 7) nivelClass = 'subposicao'; // 0101.21
-                 else if (mapNode.code.length === 8) nivelClass = 'subposicao'; // (NOVO!) 0209.10.1
+                 else if (mapNode.code.length === 8) nivelClass = 'subposicao'; // 0209.10.1
                  else if (mapNode.code.length === 10) nivelClass = 'item';
             }
 
@@ -1893,7 +1892,6 @@
                 mapNode.children.sort((a,b) => a.code.localeCompare(b.code));
                 
                 newNode.children = mapNode.children.map(childMapNode => {
-                    // (CORREÇÃO!) O próximo nível não é garantido ser 'posicao'
                     return adaptNodeFromMap(childMapNode, 'subnivel');
                 });
             }
@@ -2041,64 +2039,52 @@
         /**
          * (CORRIGIDO!) Encontra a chave do "pai" de um nó da árvore (usado pelo loadData)
          */
-        function findParentKey_Corrigido(codeRaw, treeMap) {
+        function findParentKey_Robust(codeRaw, treeMap) {
             // Nível 1 (Capítulo - 01) -> não tem pai
             if (codeRaw.length === 2 && !codeRaw.includes('.')) return null;
 
-            // Nível 2 (Posição - 01.01) -> Pai é Nível 1 (01)
-            if (codeRaw.length === 5 && codeRaw.includes('.')) {
-                return codeRaw.substring(0, 2); // 01
+            let candidates = [];
+            
+            // Ex: 0209.10.11
+            if (codeRaw.length === 10) {
+                let p = codeRaw.split('.'); // [0209, 10, 11]
+                candidates.push(`${p[0]}.${p[1]}.${p[2].substring(0,1)}`); // 0209.10.1
+                candidates.push(`${p[0]}.${p[1]}`); // 0209.10
+                candidates.push(`${p[0].substring(0,2)}.${p[0].substring(2,4)}`); // 02.09
+                candidates.push(p[0].substring(0,2)); // 02
+            }
+            // Ex: 0209.10.1
+            else if (codeRaw.length === 8) {
+                let p = codeRaw.split('.'); // [0209, 10, 1]
+                candidates.push(`${p[0]}.${p[1]}`); // 0209.10
+                candidates.push(`${p[0].substring(0,2)}.${p[0].substring(2,4)}`); // 02.09
+                candidates.push(p[0].substring(0,2)); // 02
+            }
+            // Ex: 0101.21 ou 0209.10
+            else if (codeRaw.length === 7) {
+                // Tenta 0101.2 (para 0101.21)
+                candidates.push(`${codeRaw.substring(0, 4)}.${codeRaw.substring(5, 6)}`); 
+                // Tenta 02.09 (para 0209.10)
+                candidates.push(`${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`);
+                candidates.push(codeRaw.substring(0, 2)); // 02
+            }
+            // Ex: 0101.2
+            else if (codeRaw.length === 6) {
+                candidates.push(`${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`); // 01.01
+                candidates.push(codeRaw.substring(0, 2)); // 01
+            }
+            // Ex: 01.01
+            else if (codeRaw.length === 5) {
+                candidates.push(codeRaw.substring(0, 2)); // 01
             }
 
-            // Nível 3 (Subposição - 0101.2) -> Pai é Nível 2 (01.01)
-            if (codeRaw.length === 6 && codeRaw.includes('.')) {
-                return `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.01
+            // Checa os candidatos
+            for (const key of candidates) {
+                if (treeMap.has(key)) {
+                    return key;
+                }
             }
             
-            // Nível 3 (Subposição - 0104.10) -> Pai é Nível 2 (01.04)
-            if (codeRaw.length === 7 && /^\d{4}\.\d{2}$/.test(codeRaw)) {
-                 return `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.04
-            }
-            
-            // Nível 3.5 (Subposição - 0101.21) -> Pai é Nível 3 (0101.2)
-            if (codeRaw.length === 7 && /^\d{4}\.\d{2}$/.test(codeRaw) === false) { 
-                 let parentTry = `${codeRaw.substring(0, 4)}.${codeRaw.substring(5, 6)}`; // 0101.2
-                 if (treeMap.has(parentTry)) return parentTry;
-            }
-            
-            // (NOVO!) Nível 3.5 (Subposição - 0209.10.1) -> Pai é Nível 3 (0209.10)
-            if (codeRaw.length === 8 && codeRaw.split('.').length === 3) {
-                 let parentTry = `${codeRaw.substring(0, 4)}.${codeRaw.substring(5, 7)}`; // 0209.10
-                 if (treeMap.has(parentTry)) return parentTry;
-            }
-
-            // Nível 4 (Item - 0101.21.00 ou 0209.10.11)
-            if (codeRaw.length === 10 && codeRaw.split('.').length === 3) {
-                let parts = codeRaw.split('.');
-                
-                // Tenta pai (ex: 0209.10.1)
-                let parentTry = `${parts[0]}.${parts[1]}.${parts[2].substring(0, 1)}`;
-                if (treeMap.has(parentTry)) return parentTry;
-
-                // Tenta pai (ex: 0101.21)
-                parentTry = `${parts[0]}.${parts[1]}`;
-                if (treeMap.has(parentTry)) return parentTry;
-                
-                // Tenta pai (ex: 0101.2)
-                parentTry = `${parts[0]}.${parts[1].substring(0, 1)}`;
-                if (treeMap.has(parentTry)) return parentTry;
-                
-                // Tenta pai (ex: 01.01)
-                parentTry = `${parts[0].substring(0,2)}.${parts[0].substring(2,4)}`;
-                if (treeMap.has(parentTry)) return parentTry;
-            }
-            
-            // Fallback para outros casos
-             if (codeRaw.length > 5 && codeRaw.includes('.')) {
-                 let parentTry = `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.01
-                 if (treeMap.has(parentTry)) return parentTry;
-             }
-
             return null; // Não encontrou
         }
         
