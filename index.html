@@ -1341,19 +1341,17 @@
                     return values.map(v => v.trim());
                 };
 
-                // Loop 1: Criar todos os nós no mapa
+                // (CORREÇÃO!) Loop 1: Popula APENAS o ncmDatabase (Aba 1 e 2)
                 for (let i = headerLineIndex + 1; i < lines.length; i++) {
                     if (!lines[i]) continue;
-                    
                     const values = parseCsvLine(lines[i], separator);
-                    
                     if (values.length < headers.length) continue; 
                     
                     const codeRaw = values[idxCodigo];
                     const code = codeRaw.replace(/\D/g, ''); 
-                    const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
                     
                     if (code.length === 8) {
+                        const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
                         const dataFim = values[idxDataFim];
                         let status = 'expirado';
                         let endInfo = '';
@@ -1371,24 +1369,32 @@
                             endInfo: endInfo
                         };
                     }
+                }
+                
+                // (CORREÇÃO!) Loop 2: Popula o ncmTreeMap (Aba 3)
+                for (let i = headerLineIndex + 1; i < lines.length; i++) {
+                    if (!lines[i]) continue;
+                    const values = parseCsvLine(lines[i], separator);
+                    if (values.length < headers.length) continue; 
                     
-                    // Adiciona TODOS os nós ao mapa, usando codeRaw como chave
+                    const codeRaw = values[idxCodigo];
+                    const desc = values[idxDesc].replace(/<\/?i>|<\/?sub>|<\/?sup>/g, '');
+                    
                     if (codeRaw && !newTreeMap.has(codeRaw)) {
                          newTreeMap.set(codeRaw, { 
                             desc: desc, 
                             code: codeRaw, 
-                            children: [] // Será populado no Loop 2
+                            children: [] 
                          });
                     }
                 }
-                
-                // Loop 2: Ligar os nós da árvore
+
+                // (CORREÇÃO!) Loop 3: Liga os nós da árvore
                 newTreeMap.forEach((node, codeRaw) => {
-                    const parentKey = findParentKey_Corrigido(codeRaw, newTreeMap); // <-- (CORREÇÃO!)
+                    const parentKey = findParentKey_Corrigido(codeRaw, newTreeMap);
                     if (parentKey) {
                         const parentNode = newTreeMap.get(parentKey);
                         if (parentNode) {
-                            // Adiciona o OBJETO filho (não só a chave)
                             parentNode.children.push(node);
                         }
                     }
@@ -1401,8 +1407,6 @@
                 if (Object.keys(ncmDatabase).length === 0) {
                     throw new Error("Base de dados carregada, mas nenhuma NCM válida foi processada.");
                 }
-                
-                // (REMOVIDO!) Não renderiza mais a árvore antiga
                 
                 // 5. Atualiza a UI
                 if(dataDeAtualizacao) {
@@ -1872,6 +1876,7 @@
                  if (mapNode.code.length === 5) nivelClass = 'posicao';
                  else if (mapNode.code.length === 6) nivelClass = 'subposicao'; // 0101.2
                  else if (mapNode.code.length === 7) nivelClass = 'subposicao'; // 0101.21
+                 else if (mapNode.code.length === 8) nivelClass = 'subposicao'; // (NOVO!) 0209.10.1
                  else if (mapNode.code.length === 10) nivelClass = 'item';
             }
 
@@ -1888,7 +1893,8 @@
                 mapNode.children.sort((a,b) => a.code.localeCompare(b.code));
                 
                 newNode.children = mapNode.children.map(childMapNode => {
-                    return adaptNodeFromMap(childMapNode, 'posicao');
+                    // (CORREÇÃO!) O próximo nível não é garantido ser 'posicao'
+                    return adaptNodeFromMap(childMapNode, 'subnivel');
                 });
             }
             
@@ -1897,7 +1903,6 @@
 
         /**
          * (NOVO!) Renderiza a árvore do Livro (baseado na função do Projeto 1)
-         * (MUDANÇA!) Aceita "expandDepth" para controlar a expansão
          */
         function renderNCM_Livro(nodes, parentElement, expandDepth = 0) {
             if (!nodes || nodes.length === 0) return;
@@ -1934,10 +1939,8 @@
                 if (node.hasChildren) {
                     headerElement.style.cursor = 'pointer';
                     
-                    // (MUDANÇA!) Lógica de expansão baseada na profundidade
                     if (expandDepth > 0) { 
                         childrenContainer.classList.add('expanded');
-                        // Renderiza filhos, diminuindo a profundidade
                         renderNCM_Livro(node.children, childrenContainer, expandDepth - 1); 
                         node.childrenLoaded = true;
                     }
@@ -1946,7 +1949,7 @@
                         const isExpanded = childrenContainer.classList.toggle('expanded');
                         
                         if (isExpanded && !node.childrenLoaded) { 
-                            renderNCM_Livro(node.children, childrenContainer, 0); // Ao clicar, renderiza colapsado
+                            renderNCM_Livro(node.children, childrenContainer, 0); 
                             node.childrenLoaded = true;
                         }
                     });
@@ -1973,18 +1976,15 @@
             if (searchResults.length === 0) {
                 livroTreeContainer.innerHTML = '<p style="padding: 20px;">Nenhum resultado encontrado.</p>';
             } else {
-                // (MUDANÇA!) Expande todos os resultados da busca (profundidade 99)
                 renderNCM_Livro(searchResults, livroTreeContainer, 99); 
                 highlightQuery_Livro(query);
             }
         }
 
-        // (MUDANÇA!) Esta função agora expande SÓ as Seções
         function expandSecoes_Livro() {
             if (!livroTreeContainer) return;
             resetChildrenLoaded_Livro(livroNcmData); 
             livroTreeContainer.innerHTML = '';
-            // (MUDANÇA!) Renderiza com profundidade 1 (expande 1 nível)
             renderNCM_Livro(livroNcmData, livroTreeContainer, 1);
         }
 
@@ -1992,7 +1992,6 @@
             if (!livroTreeContainer) return;
             resetChildrenLoaded_Livro(livroNcmData); 
             livroTreeContainer.innerHTML = '';
-            // (MUDANÇA!) Renderiza com profundidade 0 (colapsado)
             renderNCM_Livro(livroNcmData, livroTreeContainer, 0);
         }
         
@@ -2066,12 +2065,17 @@
                  let parentTry = `${codeRaw.substring(0, 4)}.${codeRaw.substring(5, 6)}`; // 0101.2
                  if (treeMap.has(parentTry)) return parentTry;
             }
+            
+            // (NOVO!) Nível 3.5 (Subposição - 0209.10.1) -> Pai é Nível 3 (0209.10)
+            if (codeRaw.length === 8 && codeRaw.split('.').length === 3) {
+                 let parentTry = `${codeRaw.substring(0, 4)}.${codeRaw.substring(5, 7)}`; // 0209.10
+                 if (treeMap.has(parentTry)) return parentTry;
+            }
 
             // Nível 4 (Item - 0101.21.00 ou 0209.10.11)
             if (codeRaw.length === 10 && codeRaw.split('.').length === 3) {
-                let parts = codeRaw.split('.'); // [0209, 10, 11]
+                let parts = codeRaw.split('.');
                 
-                // --- ESTA É A NOVA LÓGICA ---
                 // Tenta pai (ex: 0209.10.1)
                 let parentTry = `${parts[0]}.${parts[1]}.${parts[2].substring(0, 1)}`;
                 if (treeMap.has(parentTry)) return parentTry;
@@ -2089,13 +2093,11 @@
                 if (treeMap.has(parentTry)) return parentTry;
             }
             
-            // Fallback genérico (tentativa final)
-            // Para casos como 0209.10.1 -> 0209.10
-            if (codeRaw.includes('.')) {
-                let lastDot = codeRaw.lastIndexOf('.');
-                let parentTry = codeRaw.substring(0, lastDot);
-                if (treeMap.has(parentTry)) return parentTry;
-            }
+            // Fallback para outros casos
+             if (codeRaw.length > 5 && codeRaw.includes('.')) {
+                 let parentTry = `${codeRaw.substring(0, 2)}.${codeRaw.substring(2, 4)}`; // 01.01
+                 if (treeMap.has(parentTry)) return parentTry;
+             }
 
             return null; // Não encontrou
         }
