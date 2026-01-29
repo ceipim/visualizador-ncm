@@ -1,6 +1,6 @@
 ﻿Tabela NCM;;;;;;
-(Vigente em 17/11/2025);;;;;;
-Última Atualização: Resolução Camex nº 771/2025;;;;;;
+(Vigente em 29/01/2026);;;;;;
+Última Atualização: Resolução Gecex nº 812/2025;;;;;;
 ;;;;;;
 Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 01;Animais vivos.;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -4225,7 +4225,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 2930.90.43;Fosforotioato de O-(4-bromo-2-clorofenila) O-etila e de S-propila (profenofós);01/04/2022;31/12/9999;Res Camex;272;2021
 2930.90.49;Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 2930.90.5;"Fosforoditioatos e seus derivados; sais destes produtos";01/04/2022;31/12/9999;Res Camex;272;2021
-2930.90.51;Forato (ISO);01/04/2024;31/12/9999;Res Camex;547;2023
+2930.90.51;Forato (ISO);01/04/2024;31/01/2026;Res Camex;547;2023
 2930.90.52;Dissulfoton;01/04/2022;31/12/9999;Res Camex;272;2021
 2930.90.53;Etion;01/04/2022;31/12/9999;Res Camex;272;2021
 2930.90.54;Dimetoato;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -5373,7 +5373,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 3003.90.85;"Enantato de flufenazina; prometazina; gliburida; rutosídio; deslanosídio";01/04/2022;31/12/9999;Res Camex;272;2021
 3003.90.86;"Clortalidona; furosemida";01/04/2022;31/12/9999;Res Camex;272;2021
 3003.90.87;"Cloridrato de tizanidina; cetoconazol; furazolidona";01/04/2022;31/12/9999;Res Camex;272;2021
-3003.90.88;"Amprenavir; aprepitanto; delavirdina ou seu mesilato; efavirenz; emtricitabina; etopósido; everolimus; fosamprenavir cálcico; fosfato de fludarabina; gencitabina ou seu cloridrato; raltitrexida; ritonavir; sirolimus; tacrolimus; temsirolimus; tenipósido; tipranavir";01/04/2022;31/12/9999;Res Camex;272;2021
+3003.90.88;"Amprenavir; aprepitanto; delavirdina ou seu mesilato; efavirenz; emtricitabina; etopósido; everolimus; fosamprenavir cálcico; fosfato de fludarabina; gencitabina ou seu cloridrato; raltitrexida; ritonavir; sirolimus; tacrolimus; temsirolimus; tenipósido; tipranavir";01/04/2022;31/01/2026;Res Camex;272;2021
 3003.90.89;Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 3003.90.9;Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 3003.90.91;Extrato de pólen;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -5558,7 +5558,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 3004.90.75;"Enantato de flufenazina; prometazina; gliburida; rutosídio; deslanosídio";01/04/2022;31/12/9999;Res Camex;272;2021
 3004.90.76;"Clortalidona; furosemida";01/04/2022;31/12/9999;Res Camex;272;2021
 3004.90.77;"Cloridrato de tizanidina; cetoconazol; furazolidona";01/04/2022;31/12/9999;Res Camex;272;2021
-3004.90.78;"Amprenavir; aprepitanto; delavirdina ou seu mesilato; efavirenz; emtricitabina; etopósido; everolimus; fosamprenavir cálcico; fosfato de fludarabina; gencitabina ou seu cloridrato; raltitrexida; ritonavir; sirolimus; tacrolimus; temsirolimus; tenipósido; tipranavir";01/04/2022;31/12/9999;Res Camex;272;2021
+3004.90.78;"Amprenavir; aprepitanto; delavirdina ou seu mesilato; efavirenz; emtricitabina; etopósido; everolimus; fosamprenavir cálcico; fosfato de fludarabina; gencitabina ou seu cloridrato; raltitrexida; ritonavir; sirolimus; tacrolimus; temsirolimus; tenipósido; tipranavir";01/04/2022;31/01/2026;Res Camex;272;2021
 3004.90.79;Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 3004.90.9;Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 3004.90.91;Extrato de pólen;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -8926,7 +8926,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 59.03;Tecidos impregnados, revestidos, recobertos ou estratificados, com plástico, exceto os da posição 59.02.;01/04/2022;31/12/9999;Res Camex;272;2021
 5903.10.00;- Com poli(cloreto de vinila);01/04/2022;31/12/9999;Res Camex;272;2021
 5903.20.00;- Com poliuretano;01/04/2022;31/12/9999;Res Camex;272;2021
-5903.90.00;- Outros;01/04/2022;31/12/9999;Res Camex;272;2021
+5903.90.00;- Outros;01/04/2022;31/01/2026;Res Camex;272;2021
 59.04;"Linóleos, mesmo recortados; revestimentos para pisos (pavimentos) constituídos por um revestimento ou recobrimento aplicado sobre suporte têxtil, mesmo recortados.";01/04/2022;31/12/9999;Res Camex;272;2021
 5904.10.00;- Linóleos;01/04/2022;31/12/9999;Res Camex;272;2021
 5904.90.00;- Outros;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -9578,7 +9578,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 6505.00.39;De outras matérias têxteis;01/04/2022;31/12/9999;Res Camex;272;2021
 6505.00.90;Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 65.06;Outros chapéus e artigos de uso semelhante, mesmo guarnecidos.;01/04/2022;31/12/9999;Res Camex;272;2021
-6506.10.00;- Capacetes e artigos de uso semelhante, de proteção;01/04/2022;31/12/9999;Res Camex;272;2021
+6506.10.00;- Capacetes e artigos de uso semelhante, de proteção;01/04/2022;31/01/2026;Res Camex;272;2021
 6506.9;- Outros:;01/04/2022;31/12/9999;Res Camex;272;2021
 6506.91.00;-- De borracha ou de plástico;01/04/2022;31/12/9999;Res Camex;272;2021
 6506.99.00;-- De outras matérias;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -10428,7 +10428,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 7306.2;- Tubos para revestimento de poços, de produção ou suprimento, do tipo utilizado na extração de petróleo ou de gás:;01/04/2022;31/12/9999;Res Camex;272;2021
 7306.21.00;-- Soldados, de aço inoxidável;01/04/2022;31/12/9999;Res Camex;272;2021
 7306.29.00;-- Outros;01/04/2022;31/12/9999;Res Camex;272;2021
-7306.30.00;- Outros, soldados, de seção circular, de ferro ou aço não ligado;01/04/2022;31/12/9999;Res Camex;272;2021
+7306.30.00;- Outros, soldados, de seção circular, de ferro ou aço não ligado;01/04/2022;31/01/2026;Res Camex;272;2021
 7306.40.00;- Outros, soldados, de seção circular, de aço inoxidável;01/04/2022;31/12/9999;Res Camex;272;2021
 7306.50.00;- Outros, soldados, de seção circular, de outras ligas de aço;01/04/2022;31/12/9999;Res Camex;272;2021
 7306.6;- Outros, soldados, de seção não circular:;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -10608,7 +10608,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 7404.00.00;Desperdícios e resíduos, e sucata, de cobre.;01/04/2022;31/12/9999;Res Camex;272;2021
 7405.00.00;Ligas-mãe de cobre.;01/04/2022;31/12/9999;Res Camex;272;2021
 74.06;Pós e escamas, de cobre.;01/04/2022;31/12/9999;Res Camex;272;2021
-7406.10.00;- Pós de estrutura não lamelar;01/04/2022;31/12/9999;Res Camex;272;2021
+7406.10.00;- Pós de estrutura não lamelar;01/04/2022;31/01/2026;Res Camex;272;2021
 7406.20.00;"- Pós de estrutura lamelar; escamas";01/04/2022;31/12/9999;Res Camex;272;2021
 74.07;Barras e perfis, de cobre.;01/04/2022;31/12/9999;Res Camex;272;2021
 7407.10;- De cobre refinado (afinado);01/04/2022;31/12/9999;Res Camex;272;2021
@@ -11326,8 +11326,8 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 8412.80.00;- Outros;01/04/2022;31/12/9999;Res Camex;272;2021
 8412.90;- Partes;01/04/2022;31/12/9999;Res Camex;272;2021
 8412.90.10;De propulsores a reação;01/04/2022;31/12/9999;Res Camex;272;2021
-8412.90.20;De máquinas a vapor de movimento retilíneo (cilindros);01/04/2022;31/12/9999;Res Camex;272;2021
-8412.90.80;Outras, de máquinas das subposições 8412.21 ou 8412.31;01/04/2022;31/12/9999;Res Camex;272;2021
+8412.90.20;De máquinas a vapor de movimento retilíneo (cilindros);01/04/2022;31/01/2026;Res Camex;272;2021
+8412.90.80;Outras, de máquinas das subposições 8412.21 ou 8412.31;01/04/2022;31/01/2026;Res Camex;272;2021
 8412.90.90;Outras;01/04/2022;31/12/9999;Res Camex;272;2021
 84.13;"Bombas para líquidos, mesmo com dispositivo medidor; elevadores de líquidos.";01/04/2022;31/12/9999;Res Camex;272;2021
 8413.1;- Bombas com dispositivo medidor ou concebidas para comportá-lo:;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -12166,7 +12166,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 8450.20.20;Outras máquinas, de capacidade não superior a 18 kg;01/04/2024;31/12/9999;Res Camex;547;2023
 8450.20.90;Outras;01/04/2022;31/12/9999;Res Camex;272;2021
 8450.90;- Partes;01/04/2022;31/12/9999;Res Camex;272;2021
-8450.90.10;De máquinas da subposição 8450.20;01/04/2022;31/12/9999;Res Camex;272;2021
+8450.90.10;De máquinas da subposição 8450.20;01/04/2022;31/01/2026;Res Camex;272;2021
 8450.90.90;Outras;01/04/2022;31/12/9999;Res Camex;272;2021
 84.51;"Máquinas e aparelhos (exceto as máquinas da posição 84.50) para lavar, limpar, espremer, secar, passar, prensar (incluindo as prensas de transferência térmica ou de fusão), branquear, tingir, para apresto e acabamento, para revestir ou impregnar fios, tecidos ou obras de matérias têxteis e máquinas para revestir tecidos-base ou outros suportes utilizados na fabricação de revestimentos para pisos (pavimentos), tais como linóleo; máquinas para enrolar, desenrolar, dobrar, cortar ou dentear tecidos.";01/04/2022;31/12/9999;Res Camex;272;2021
 8451.10.00;- Máquinas para lavar a seco;01/04/2022;31/12/9999;Res Camex;272;2021
@@ -12187,7 +12187,7 @@ Código;Descrição;Data Início;Data Fim;Ato Legal Início;Número;Ano
 8451.40.29;Outras;01/04/2022;31/12/9999;Res Camex;272;2021
 8451.40.90;Outras;01/04/2022;31/12/9999;Res Camex;272;2021
 8451.50;- Máquinas para enrolar, desenrolar, dobrar, cortar ou dentear tecidos;01/04/2022;31/12/9999;Res Camex;272;2021
-8451.50.10;Para inspecionar tecidos;01/04/2022;31/12/9999;Res Camex;272;2021
+8451.50.10;Para inspecionar tecidos;01/04/2022;31/01/2026;Res Camex;272;2021
 8451.50.20;Automáticas, para enfestar ou cortar;01/04/2022;31/12/9999;Res Camex;272;2021
 8451.50.90;Outras;01/04/2022;31/12/9999;Res Camex;272;2021
 8451.80.00;- Outras máquinas e aparelhos;01/04/2022;31/12/9999;Res Camex;272;2021
